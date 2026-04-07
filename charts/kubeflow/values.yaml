@@ -1,0 +1,249 @@
+# Default values for Kubeflow.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# ================================================
+# Global Settings
+# ================================================
+global:
+  namespace: kubeflow
+  istioNamespace: istio-system
+  userNamespace: kubeflow-user-example-com
+  nameOverride: 
+  fullnameOverride: 
+  imagePullSecrets:
+  podAnnotations:
+  podLabels:
+  commonAnnotations:
+  securityContext:
+    runAsNonRoot: True
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: False
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: False
+  nodeSelector:
+  tolerations:
+  affinity:
+
+# ================================================
+# Common Infrastructure Components
+# ================================================
+
+# -- Cert Manager configuration
+certManager:
+  enabled: True
+  namespace: cert-manager
+
+# -- Istio Crds configuration
+istioCrds:
+  enabled: True
+
+# -- Istio configuration
+istio:
+  enabled: True
+  namespace:
+    create: True
+    name: istio-system
+  profile: default
+  gateways:
+    ingressGateway:
+      enabled: True
+      type: LoadBalancer
+
+# -- Istio Resources configuration
+istioResources:
+  enabled: True
+
+# -- Cluster Local Gateway configuration
+clusterLocalGateway:
+  enabled: True
+
+# -- Oauth2 Proxy configuration
+oauth2Proxy:
+  enabled: True
+  namespace: oauth2-proxy
+  replicas: 1
+
+# -- Dex configuration
+dex:
+  enabled: True
+  namespace: auth
+  replicas: 1
+
+# -- Knative Serving configuration
+knativeServing:
+  enabled: True
+  namespace: knative-serving
+
+
+# ================================================
+# Core Kubeflow Components
+# ================================================
+
+# -- Namespace configuration
+namespace:
+  enabled: True
+  create: True
+
+# -- Kubeflow Roles configuration
+kubeflowRoles:
+  enabled: True
+
+# -- Profiles configuration
+profiles:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+# -- Central Dashboard configuration
+centralDashboard:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+# -- Admission Webhook configuration
+admissionWebhook:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+
+# ================================================
+# Notebook Components
+# ================================================
+
+# -- Notebook Controller configuration
+notebookController:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+# -- Jupyter Web App configuration
+jupyterWebApp:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+
+# ================================================
+# Training Components
+# ================================================
+
+# -- Katib configuration
+katib:
+  enabled: True
+  namespace: kubeflow
+  controller:
+    replicas: 1
+  ui:
+    replicas: 1
+  db:
+    replicas: 1
+
+# -- Trainer configuration
+trainer:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+
+# ================================================
+# Model Serving Components
+# ================================================
+
+# -- Kserve configuration
+kserve:
+  enabled: True
+  namespace: kubeflow
+  controller:
+    replicas: 1
+
+# -- Models Web App configuration
+modelsWebApp:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+
+# ================================================
+# Pipeline Components
+# ================================================
+
+# -- Pipelines configuration
+pipelines:
+  enabled: True
+  namespace: kubeflow
+  api:
+    replicas: 1
+  ui:
+    replicas: 1
+  persistence:
+    enabled: True
+
+
+# ================================================
+# Storage Components
+# ================================================
+
+# -- Volumes Web App configuration
+volumesWebApp:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+# -- Pvcviewer Controller configuration
+pvcviewerController:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+
+# ================================================
+# Tensorboard Components
+# ================================================
+
+# -- Tensorboard Controller configuration
+tensorboardController:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+# -- Tensorboards Web App configuration
+tensorboardsWebApp:
+  enabled: True
+  namespace: kubeflow
+  replicas: 1
+
+
+# ================================================
+# Optional Profile Components
+# These components are disabled by default and can be enabled
+# via profiles or as needed.
+# ================================================
+
+# -- Knative Eventing configuration
+knativeEventing:
+  enabled: False
+  namespace: knative-eventing
+
+# -- Training Operator configuration
+trainingOperator:
+  enabled: False
+  namespace: kubeflow
+  replicas: 1
+
+# -- Spark Operator configuration
+sparkOperator:
+  enabled: False
+  namespace: kubeflow
+  replicas: 1
+
+# -- User Namespace configuration
+userNamespace:
+  enabled: True
+  name: kubeflow-user-example-com
+

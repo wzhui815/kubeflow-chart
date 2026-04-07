@@ -1,0 +1,15 @@
+{
+  "git": {
+    "commit": "46f3142",
+    "commit_date": "2026-03-27 08:50:50 +0000",
+    "commit_message": "chore(ci): Remove trivy - Manifests (#3424)",
+    "branch": "master",
+    "tag": null,
+    "generated_at": "2026-04-07T19:13:44.008105"
+  },
+  "helm_chart": {
+    "name": "kubeflow",
+    "description": "Kubeflow Helm Chart",
+    "generated_from": "kustomize"
+  }
+}

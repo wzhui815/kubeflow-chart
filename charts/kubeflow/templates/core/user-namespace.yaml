@@ -1,0 +1,18 @@
+{- /*
+  userNamespace component
+  Source: common/user-namespace/base
+  Enabled by default: True
+*/ -}
+
+{- if .Values.userNamespace.enabled }
+
+apiVersion: kubeflow.org/v1beta1
+kind: Profile
+metadata:
+  name: kubeflow-user-example-com
+spec:
+  owner:
+    kind: User
+    name: user@example.com
+
+{- end }
