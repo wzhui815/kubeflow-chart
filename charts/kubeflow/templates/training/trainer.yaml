@@ -37863,7 +37863,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Health configuration
+*/}
 */}
 */}
 */}
@@ -37875,7 +37877,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Metrics configuration
+*/}
 */}
 */}
 */}
@@ -37886,7 +37890,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Webhook configuration
+*/}
 */}
 */}
 */}
@@ -37897,7 +37903,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Leader election configuration
+*/}
 */}
 */}
 */}
@@ -37912,7 +37920,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Controller configuration
+*/}
 */}
 */}
 */}
@@ -37925,7 +37935,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Certificate management configuration
+*/}
 */}
 */}
 */}
@@ -37937,7 +37949,9 @@ data:
 {/*
 {/*
 {/*
+{/*
     # Client connection configuration
+*/}
 */}
 */}
 */}

@@ -5394,6 +5394,7 @@ apiVersion: v1
 data:
   sync.py: |
 {/*
+{/*
     # Copyright 2020-2021 The Kubeflow Authors
     #
     # Licensed under the Apache License, Version 2.0 (the "License");
@@ -5408,6 +5409,7 @@ data:
     # See the License for the specific language governing permissions and
     # limitations under the License.
 */}
+*/}
     from http.server import BaseHTTPRequestHandler, HTTPServer
     import json
     import os
@@ -5415,7 +5417,9 @@ data:
     import hashlib
 
 {/*
+{/*
     # From awscli installed in alpine/k8s image
+*/}
 */}
     import botocore.session
 
@@ -5423,7 +5427,9 @@ data:
 
     session = botocore.session.get_session()
 {/*
+{/*
     # S3 client for lifecycle policy management
+*/}
 */}
     s3_endpoint_url = os.environ.get("S3_ENDPOINT_URL", "http://seaweedfs.kubeflow:8333")
     s3 = session.create_client('s3', region_name='foobar', endpoint_url=s3_endpoint_url)
@@ -5435,7 +5441,9 @@ data:
 
     def create_iam_client():
 {/*
+{/*
         # To interact with SeaweedFS user management. Region does not matter.
+*/}
 */}
         endpoint_url = os.environ.get("AWS_ENDPOINT_URL")
         if endpoint_url:
@@ -5498,9 +5506,11 @@ data:
             os.environ.get("OBJECT_STORE_HOST", "seaweedfs")
 
 {/*
+{/*
         # Look for specific tags for each image first, falling back to
         # previously used KFP_VERSION environment variable for backwards
         # compatibility
+*/}
 */}
         settings["frontend_tag"] = \
             frontend_tag or \
@@ -5536,14 +5546,18 @@ data:
                     return
 
 {/*
+{/*
                 # To disable lifecycle policy we need to delete it
+*/}
 */}
                 if retention_days <= 0:
                     print(f"ARTIFACT_RETENTION_DAYS is non-positive ({retention_days} days). Attempting to delete lifecycle policy.")
                     try:
                         response = s3.get_bucket_lifecycle_configuration(Bucket=bucket_name)
 {/*
+{/*
                         # Check if there are any enabled rules
+*/}
 */}
                         has_enabled_rules = any(rule.get('Status') == 'Enabled' for rule in response.get('Rules', []))
 
@@ -5557,7 +5571,9 @@ data:
                     return
 
 {/*
+{/*
                 # Create/update lifecycle policy
+*/}
 */}
                 life_cycle_policy = {
                     "Rules": [
@@ -5586,7 +5602,9 @@ data:
 
             def sync(self, parent, attachments):
 {/*
+{/*
                 # parent is a namespace
+*/}
 */}
                 namespace = parent.get("metadata", {}).get("name")
 
@@ -5597,7 +5615,9 @@ data:
                     return {"status": {}, "attachments": []}
 
 {/*
+{/*
                 # Compute status based on observed state.
+*/}
 */}
                 desired_status = {
                     "kubeflow-pipelines-ready":
@@ -5609,7 +5629,9 @@ data:
                 }
 
 {/*
+{/*
                 # Generate the desired attachment object(s).
+*/}
 */}
                 desired_resources = [
                     {
@@ -5670,7 +5692,9 @@ data:
                 ]
 
 {/*
+{/*
                 # Add artifact fetcher related resources if enabled
+*/}
 */}
                 if artifacts_proxy_enabled.lower() == "true":
                     desired_resources.extend([
@@ -5792,10 +5816,12 @@ data:
                 print('Desired resources except secrets:\n', json.dumps(desired_resources, sort_keys=True))
 
 {/*
+{/*
                 # Moved after the print argument because this is sensitive data.
 
                 # Check if secret is already there when the controller made the request. If yes, then
                 # use it. Else create a new credentials on seaweedfs for the namespace.
+*/}
 */}
                 if s3_secret := attachments["Secret.v1"].get(f"{namespace}/mlpipeline-minio-artifact"):
                     desired_resources.append(s3_secret)
@@ -5804,8 +5830,10 @@ data:
                     print('Creating new access key.')
                     s3_access_key = iam.create_access_key(UserName=namespace)
 {/*
+{/*
                     # Use the AWS IAM API of seaweedfs to manage access policies to bucket.
                     # This policy ensures that a user can only access artifacts from his own profile.
+*/}
 */}
                     iam.put_user_policy(
                         UserName=namespace,
@@ -5851,7 +5879,9 @@ data:
 
             def do_POST(self):
 {/*
+{/*
                 # Serve the sync() function as a JSON webhook.
+*/}
 */}
                 observed = json.loads(
                     self.rfile.read(int(self.headers.get("content-length"))))
@@ -6078,6 +6108,7 @@ data:
       endpoint: "seaweedfs.kubeflow:9000"
       bucket: "mlpipeline"
 {/*
+{/*
       # keyFormat is a format pattern to define how artifacts will be organized in a bucket.
       # It can reference workflow metadata variables such as workflow.namespace, workflow.name,
       # pod.name. Can also use strftime formating of workflow.creationTimestamp so that workflow
@@ -6089,6 +6120,7 @@ data:
       # The following format looks like:
       # artifacts/my-workflow-abc123/2018/08/23/my-workflow-abc123-1234567890
       # Adding date into the path greatly reduces the chance of {{pod.name}} collision.
+*/}
 */}
       keyFormat: "private-artifacts/{{workflow.namespace}}/{{workflow.name}}/{{workflow.creationTimestamp.Y}}/{{workflow.creationTimestamp.m}}/{{workflow.creationTimestamp.d}}/{{pod.name}}"
       insecure: true
@@ -7506,7 +7538,9 @@ spec:
               - -c
               - |
 {/*
+{/*
                 # Wait up to 120 seconds  for SeaweedFS master to be ready
+*/}
 */}
                 for i in $(seq 1 60); do
                   if wget -q --spider http://127.0.0.1:8333/status; then
@@ -7520,7 +7554,9 @@ spec:
                 done
 
 {/*
+{/*
                 # Create bucket with retries (maximum 25 seconds)
+*/}
 */}
                 for i in $(seq 1 5); do
                   echo "s3.bucket.create --name mlpipeline" | /usr/bin/weed shell 2>&1 || true
@@ -7535,7 +7571,9 @@ spec:
                 done
 
 {/*
+{/*
                 # Configure admin user with retries (25s max)
+*/}
 */}
                 for i in $(seq 1 5); do
                   if echo "s3.configure -user kubeflow-admin -access_key $accesskey -secret_key $secretkey -actions Admin -apply" | /usr/bin/weed shell 2>&1; then
@@ -7549,7 +7587,9 @@ spec:
                 done
 
 {/*
+{/*
                 # Verify bucket is accessible
+*/}
 */}
                 if ! echo "s3.bucket.list" | /usr/bin/weed shell | grep -q mlpipeline; then
                   echo "ERROR: mlpipeline bucket verification failed"
@@ -7557,7 +7597,9 @@ spec:
                 fi
 
 {/*
+{/*
                 # Signal successful initialization for the startup probe
+*/}
 */}
                 touch /tmp/initialization-complete
         livenessProbe:
