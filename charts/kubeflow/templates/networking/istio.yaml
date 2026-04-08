@@ -868,59 +868,59 @@ data:
     template: "{{ Template_Version_And_Istio_Version_Mismatched_Check_Installation }}"
     templates:
       sidecar: |
-        {{- define "resources"  }}
-          {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
-            {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
+        {{ define "resources"  }}
+          {{ if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
+            {{ if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
               requests:
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) }}
                 cpu: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU` | quote }}
                 {{ end }}
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
                 memory: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory` | quote }}
                 {{ end }}
-            {{- end }}
-            {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
+            {{ end }}
+            {{ if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
               limits:
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) }}
                 cpu: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit` | quote }}
                 {{ end }}
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
                 memory: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit` | quote }}
                 {{ end }}
-            {{- end }}
-          {{- else }}
-            {{- if .Values.global.proxy.resources }}
+            {{ end }}
+          {{ else }}
+            {{ if .Values.global.proxy.resources }}
               {{ toYaml .Values.global.proxy.resources | indent 6 }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
         {{ $tproxy := (eq (annotation .ObjectMeta `sidecar.istio.io/interceptionMode` .ProxyConfig.InterceptionMode) `TPROXY`) }}
         {{ $capNetBindService := (eq (annotation .ObjectMeta `sidecar.istio.io/capNetBindService` .Values.global.proxy.capNetBindService) `true`) }}
         {{ $nativeSidecar := ne (index .ObjectMeta.Annotations `sidecar.istio.io/nativeSidecar` | default (printf "%t" .NativeSidecars)) "false" }}
-        {{- $containers := list }}
-        {{- range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{- end}}
+        {{ $containers := list }}
+        {{ range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{ end}}
         metadata:
           labels:
             security.istio.io/tlsMode: {{ index .ObjectMeta.Labels `security.istio.io/tlsMode` | default "istio"  | quote }}
-            {{- if eq (index .ProxyConfig.ProxyMetadata "ISTIO_META_ENABLE_HBONE") "true" }}
+            {{ if eq (index .ProxyConfig.ProxyMetadata "ISTIO_META_ENABLE_HBONE") "true" }}
             networking.istio.io/tunnel: {{ index .ObjectMeta.Labels `networking.istio.io/tunnel` | default "http"  | quote }}
-            {{- end }}
+            {{ end }}
             service.istio.io/canonical-name: {{ index .ObjectMeta.Labels `service.istio.io/canonical-name` | default (index .ObjectMeta.Labels `app.kubernetes.io/name`) | default (index .ObjectMeta.Labels `app`) | default .DeploymentMeta.Name  | trunc 63 | trimSuffix "-" | quote }}
             service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels `service.istio.io/canonical-revision` | default (index .ObjectMeta.Labels `app.kubernetes.io/version`) | default (index .ObjectMeta.Labels `version`) | default "latest"  | quote }}
           annotations: {
             istio.io/rev: {{ .Revision | default "default" | quote }},
-            {{- if ge (len $containers) 1 }}
-            {{- if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-logs-container`) }}
+            {{ if ge (len $containers) 1 }}
+            {{ if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-logs-container`) }}
             kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}",
-            {{- end }}
-            {{- if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-container`) }}
+            {{ end }}
+            {{ if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-container`) }}
             kubectl.kubernetes.io/default-container: "{{ index $containers 0 }}",
-            {{- end }}
-            {{- end }}
-        {{- if .Values.pilot.cni.enabled }}
-            {{- if eq .Values.pilot.cni.provider "multus" }}
+            {{ end }}
+            {{ end }}
+        {{ if .Values.pilot.cni.enabled }}
+            {{ if eq .Values.pilot.cni.provider "multus" }}
             k8s.v1.cni.cncf.io/networks: '{{ appendMultusNetwork (index .ObjectMeta.Annotations `k8s.v1.cni.cncf.io/networks`) `default/istio-cni` }}',
-            {{- end }}
+            {{ end }}
             sidecar.istio.io/interceptionMode: "{{ annotation .ObjectMeta `sidecar.istio.io/interceptionMode` .ProxyConfig.InterceptionMode }}",
             {{ with annotation .ObjectMeta `traffic.sidecar.istio.io/includeOutboundIPRanges` .Values.global.proxy.includeIPRanges }}traffic.sidecar.istio.io/includeOutboundIPRanges: "{{.}}",{{ end }}
             {{ with annotation .ObjectMeta `traffic.sidecar.istio.io/excludeOutboundIPRanges` .Values.global.proxy.excludeIPRanges }}traffic.sidecar.istio.io/excludeOutboundIPRanges: "{{.}}",{{ end }}
@@ -928,37 +928,37 @@ data:
             traffic.sidecar.istio.io/excludeInboundPorts: "{{ excludeInboundPort (annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort) (annotation .ObjectMeta `traffic.sidecar.istio.io/excludeInboundPorts` .Values.global.proxy.excludeInboundPorts) }}",
             {{ if or (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/includeOutboundPorts`) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") }}
             traffic.sidecar.istio.io/includeOutboundPorts: "{{ annotation .ObjectMeta `traffic.sidecar.istio.io/includeOutboundPorts` .Values.global.proxy.includeOutboundPorts }}",
-            {{- end }}
+            {{ end }}
             {{ if or (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeOutboundPorts`) (ne .Values.global.proxy.excludeOutboundPorts "") }}
             traffic.sidecar.istio.io/excludeOutboundPorts: "{{ annotation .ObjectMeta `traffic.sidecar.istio.io/excludeOutboundPorts` .Values.global.proxy.excludeOutboundPorts }}",
-            {{- end }}
+            {{ end }}
             {{ with index .ObjectMeta.Annotations `traffic.sidecar.istio.io/kubevirtInterfaces` }}traffic.sidecar.istio.io/kubevirtInterfaces: "{{.}}",{{ end }}
             {{ with index .ObjectMeta.Annotations `istio.io/reroute-virtual-interfaces` }}istio.io/reroute-virtual-interfaces: "{{.}}",{{ end }}
             {{ with index .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeInterfaces` }}traffic.sidecar.istio.io/excludeInterfaces: "{{.}}",{{ end }}
-        {{- end }}
+        {{ end }}
           }
         spec:
-          {{- $holdProxy := and
+          {{ $holdProxy := and
               (or .ProxyConfig.HoldApplicationUntilProxyStarts.GetValue .Values.global.proxy.holdApplicationUntilProxyStarts)
               (not $nativeSidecar) }}
-          {{- $noInitContainer := and
+          {{ $noInitContainer := and
               (eq (annotation .ObjectMeta `sidecar.istio.io/interceptionMode` .ProxyConfig.InterceptionMode) `NONE`)
               (not $nativeSidecar) }}
           {{ if $noInitContainer }}
           initContainers: []
-          {{ else -}}
+          {{ else }}
           initContainers:
           {{ if ne (annotation .ObjectMeta `sidecar.istio.io/interceptionMode` .ProxyConfig.InterceptionMode) `NONE` }}
-          {{ if .Values.pilot.cni.enabled -}}
+          {{ if .Values.pilot.cni.enabled }}
           - name: istio-validation
-          {{ else -}}
+          {{ else }}
           - name: istio-init
-          {{ end -}}
-          {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy_init.image) }}
+          {{ end }}
+          {{ if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy_init.image) }}
             image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy_init.image }}"
-          {{- else }}
+          {{ else }}
             image: "{{ .ProxyImage }}"
-          {{- end }}
+          {{ end }}
             args:
             - istio-iptables
             - "-p"
@@ -976,90 +976,90 @@ data:
             - "-b"
             - "{{ annotation .ObjectMeta `traffic.sidecar.istio.io/includeInboundPorts` .Values.global.proxy.includeInboundPorts }}"
             - "-d"
-          {{- if excludeInboundPort (annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort) (annotation .ObjectMeta `traffic.sidecar.istio.io/excludeInboundPorts` .Values.global.proxy.excludeInboundPorts) }}
+          {{ if excludeInboundPort (annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort) (annotation .ObjectMeta `traffic.sidecar.istio.io/excludeInboundPorts` .Values.global.proxy.excludeInboundPorts) }}
             - "15090,15021,{{ excludeInboundPort (annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort) (annotation .ObjectMeta `traffic.sidecar.istio.io/excludeInboundPorts` .Values.global.proxy.excludeInboundPorts) }}"
-          {{- else }}
+          {{ else }}
             - "15090,15021"
-          {{- end }}
-            {{ if or (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/includeOutboundPorts`) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") -}}
+          {{ end }}
+            {{ if or (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/includeOutboundPorts`) (ne (valueOrDefault .Values.global.proxy.includeOutboundPorts "") "") }}
             - "-q"
             - "{{ annotation .ObjectMeta `traffic.sidecar.istio.io/includeOutboundPorts` .Values.global.proxy.includeOutboundPorts }}"
-            {{ end -}}
-            {{ if or (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeOutboundPorts`) (ne (valueOrDefault .Values.global.proxy.excludeOutboundPorts "") "") -}}
+            {{ end }}
+            {{ if or (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeOutboundPorts`) (ne (valueOrDefault .Values.global.proxy.excludeOutboundPorts "") "") }}
             - "-o"
             - "{{ annotation .ObjectMeta `traffic.sidecar.istio.io/excludeOutboundPorts` .Values.global.proxy.excludeOutboundPorts }}"
-            {{ end -}}
-            {{ if (isset .ObjectMeta.Annotations `istio.io/reroute-virtual-interfaces`) -}}
+            {{ end }}
+            {{ if (isset .ObjectMeta.Annotations `istio.io/reroute-virtual-interfaces`) }}
             - "-k"
             - "{{ index .ObjectMeta.Annotations `istio.io/reroute-virtual-interfaces` }}"
-            {{ else if (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/kubevirtInterfaces`) -}}
+            {{ else if (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/kubevirtInterfaces`) }}
             - "-k"
             - "{{ index .ObjectMeta.Annotations `traffic.sidecar.istio.io/kubevirtInterfaces` }}"
-            {{ end -}}
-             {{ if (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeInterfaces`) -}}
+            {{ end }}
+             {{ if (isset .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeInterfaces`) }}
             - "-c"
             - "{{ index .ObjectMeta.Annotations `traffic.sidecar.istio.io/excludeInterfaces` }}"
-            {{ end -}}
+            {{ end }}
             - "--log_output_level={{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level }}"
-            {{ if .Values.global.logAsJson -}}
+            {{ if .Values.global.logAsJson }}
             - "--log_as_json"
-            {{ end -}}
-            {{ if .Values.pilot.cni.enabled -}}
+            {{ end }}
+            {{ if .Values.pilot.cni.enabled }}
             - "--run-validation"
             - "--skip-rule-apply"
-            {{ else if .Values.global.proxy_init.forceApplyIptables -}}
+            {{ else if .Values.global.proxy_init.forceApplyIptables }}
             - "--force-apply"
-            {{ end -}}
-            {{ if .Values.global.nativeNftables -}}
+            {{ end }}
+            {{ if .Values.global.nativeNftables }}
             - "--native-nftables"
-            {{ end -}}
+            {{ end }}
             {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
-          {{- if .ProxyConfig.ProxyMetadata }}
+          {{ if .ProxyConfig.ProxyMetadata }}
             env:
-            {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+            {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
             - name: {{ $key }}
               value: "{{ $value }}"
-            {{- end }}
-          {{- end }}
+            {{ end }}
+          {{ end }}
             resources:
           {{ template "resources" . }}
             securityContext:
               allowPrivilegeEscalation: {{ .Values.global.proxy.privileged }}
               privileged: {{ .Values.global.proxy.privileged }}
               capabilities:
-            {{- if not .Values.pilot.cni.enabled }}
+            {{ if not .Values.pilot.cni.enabled }}
                 add:
                 - NET_ADMIN
                 - NET_RAW
-            {{- end }}
+            {{ end }}
                 drop:
                 - ALL
-            {{- if not .Values.pilot.cni.enabled }}
+            {{ if not .Values.pilot.cni.enabled }}
               readOnlyRootFilesystem: false
               runAsGroup: 0
               runAsNonRoot: false
               runAsUser: 0
-            {{- else }}
+            {{ else }}
               readOnlyRootFilesystem: true
               runAsGroup: {{ if $tproxy }} 1337 {{ else }} {{ .ProxyGID | default "1337" }} {{ end }}
               runAsUser: {{ if $tproxy }} 1337 {{ else }} {{ .ProxyUID | default "1337" }} {{ end }}
               runAsNonRoot: true
-            {{- end }}
-            {{- if .Values.global.proxy.seccompProfile }}
+            {{ end }}
+            {{ if .Values.global.proxy.seccompProfile }}
               seccompProfile:
-            {{- toYaml .Values.global.proxy.seccompProfile | nindent 8 }}
-            {{- end }}
-          {{ end -}}
-          {{ end -}}
+            {{ toYaml .Values.global.proxy.seccompProfile | nindent 8 }}
+            {{ end }}
+          {{ end }}
+          {{ end }}
           {{ if not $nativeSidecar }}
           containers:
           {{ end }}
           - name: istio-proxy
-          {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
+          {{ if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
             image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image }}"
-          {{- else }}
+          {{ else }}
             image: "{{ .ProxyImage }}"
-          {{- end }}
+          {{ end }}
             {{ if $nativeSidecar }}restartPolicy: Always{{end}}
             ports:
             - containerPort: 15090
@@ -1073,27 +1073,27 @@ data:
             - --proxyLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/logLevel` .Values.global.proxy.logLevel }}
             - --proxyComponentLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/componentLogLevel` .Values.global.proxy.componentLogLevel }}
             - --log_output_level={{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level }}
-          {{- if .Values.global.sts.servicePort }}
+          {{ if .Values.global.sts.servicePort }}
             - --stsPort={{ .Values.global.sts.servicePort }}
-          {{- end }}
-          {{- if .Values.global.logAsJson }}
+          {{ end }}
+          {{ if .Values.global.logAsJson }}
             - --log_as_json
-          {{- end }}
-          {{- if .Values.global.proxy.outlierLogPath }}
+          {{ end }}
+          {{ if .Values.global.proxy.outlierLogPath }}
             - --outlierLogPath={{ .Values.global.proxy.outlierLogPath }}
-          {{- end}}
-          {{- if .Values.global.proxy.lifecycle }}
+          {{ end}}
+          {{ if .Values.global.proxy.lifecycle }}
             lifecycle:
               {{ toYaml .Values.global.proxy.lifecycle | indent 6 }}
-          {{- else if $holdProxy }}
+          {{ else if $holdProxy }}
             lifecycle:
               postStart:
                 exec:
                   command:
                   - pilot-agent
                   - wait
-          {{- else if $nativeSidecar }}
-            {{- /* preStop is called when the pod starts shutdown. Initialize drain. We will get SIGTERM once applications are torn down. */}}
+          {{ else if $nativeSidecar }}
+            {{ /* preStop is called when the pod starts shutdown. Initialize drain. We will get SIGTERM once applications are torn down. */}}
             lifecycle:
               preStop:
                 exec:
@@ -1103,20 +1103,20 @@ data:
                   - --debug-port={{(annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort)}}
                   - POST
                   - drain
-          {{- end }}
+          {{ end }}
             env:
-            {{- if eq .InboundTrafficPolicyMode "localhost" }}
+            {{ if eq .InboundTrafficPolicyMode "localhost" }}
             - name: REWRITE_PROBE_LEGACY_LOCALHOST_DESTINATION
               value: "true"
-            {{- end }}
+            {{ end }}
             - name: PILOT_CERT_PROVIDER
               value: {{ .Values.global.pilotCertProvider }}
             - name: CA_ADDR
-            {{- if .Values.global.caAddress }}
+            {{ if .Values.global.caAddress }}
               value: {{ .Values.global.caAddress }}
-            {{- else }}
-              value: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}.{{ .Values.global.istioNamespace }}.svc:15012
-            {{- end }}
+            {{ else }}
+              value: istiod{{ if not (eq .Values.revision "") }}-{{ .Values.revision }}{{ end }}.{{ .Values.global.istioNamespace }}.svc:15012
+            {{ end }}
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -1148,15 +1148,15 @@ data:
             - name: ISTIO_META_POD_PORTS
               value: |-
                 [
-                {{- $first := true }}
-                {{- range $index1, $c := .Spec.Containers }}
-                  {{- range $index2, $p := $c.Ports }}
-                    {{- if (structToJSON $p) }}
+                {{ $first := true }}
+                {{ range $index1, $c := .Spec.Containers }}
+                  {{ range $index2, $p := $c.Ports }}
+                    {{ if (structToJSON $p) }}
                     {{if not $first}},{{end}}{{ structToJSON $p }}
-                    {{- $first = false }}
-                    {{- end }}
-                  {{- end}}
-                {{- end}}
+                    {{ $first = false }}
+                    {{ end }}
+                  {{ end}}
+                {{ end}}
                 ]
             - name: ISTIO_META_APP_CONTAINERS
               value: "{{ $containers | join "," }}"
@@ -1170,10 +1170,10 @@ data:
                 resourceFieldRef:
                   resource: limits.cpu
                   divisor: "1"
-            {{- if .CompliancePolicy }}
+            {{ if .CompliancePolicy }}
             - name: COMPLIANCE_POLICY
               value: "{{ .CompliancePolicy }}"
-            {{- end }}
+            {{ end }}
             - name: ISTIO_META_CLUSTER_ID
               value: "{{ valueOrDefault .Values.global.multiCluster.clusterName `Kubernetes` }}"
             - name: ISTIO_META_NODE_NAME
@@ -1182,43 +1182,43 @@ data:
                   fieldPath: spec.nodeName
             - name: ISTIO_META_INTERCEPTION_MODE
               value: "{{ or (index .ObjectMeta.Annotations `sidecar.istio.io/interceptionMode`) .ProxyConfig.InterceptionMode.String }}"
-            {{- if .Values.global.network }}
+            {{ if .Values.global.network }}
             - name: ISTIO_META_NETWORK
               value: "{{ .Values.global.network }}"
-            {{- end }}
-            {{- with (index .ObjectMeta.Labels `service.istio.io/workload-name` | default .DeploymentMeta.Name) }}
+            {{ end }}
+            {{ with (index .ObjectMeta.Labels `service.istio.io/workload-name` | default .DeploymentMeta.Name) }}
             - name: ISTIO_META_WORKLOAD_NAME
               value: "{{ . }}"
             {{ end }}
-            {{- if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
+            {{ if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
             - name: ISTIO_META_OWNER
               value: kubernetes://apis/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace `default` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
-            {{- end}}
-            {{- if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
+            {{ end}}
+            {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
             - name: ISTIO_BOOTSTRAP_OVERRIDE
               value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
-            {{- end }}
-            {{- if .Values.global.meshID }}
+            {{ end }}
+            {{ if .Values.global.meshID }}
             - name: ISTIO_META_MESH_ID
               value: "{{ .Values.global.meshID }}"
-            {{- else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
+            {{ else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
             - name: ISTIO_META_MESH_ID
               value: "{{ (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}"
-            {{- end }}
-            {{- with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
+            {{ end }}
+            {{ with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
             - name: TRUST_DOMAIN
               value: "{{ . }}"
-            {{- end }}
-            {{- if and (eq .Values.global.proxy.tracer "datadog") (isset .ObjectMeta.Annotations `apm.datadoghq.com/env`) }}
-            {{- range $key, $value := fromJSON (index .ObjectMeta.Annotations `apm.datadoghq.com/env`) }}
+            {{ end }}
+            {{ if and (eq .Values.global.proxy.tracer "datadog") (isset .ObjectMeta.Annotations `apm.datadoghq.com/env`) }}
+            {{ range $key, $value := fromJSON (index .ObjectMeta.Annotations `apm.datadoghq.com/env`) }}
             - name: {{ $key }}
               value: "{{ $value }}"
-            {{- end }}
-            {{- end }}
-            {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+            {{ end }}
+            {{ end }}
+            {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
             - name: {{ $key }}
               value: "{{ $value }}"
-            {{- end }}
+            {{ end }}
             {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
             {{ if ne (annotation .ObjectMeta `status.sidecar.istio.io/port` .Values.global.proxy.statusPort) `0` }}
           {{ if .Values.global.proxy.startupProbe.enabled }}
@@ -1239,9 +1239,9 @@ data:
               periodSeconds: {{ annotation .ObjectMeta `readiness.status.sidecar.istio.io/periodSeconds` .Values.global.proxy.readinessPeriodSeconds }}
               timeoutSeconds: 3
               failureThreshold: {{ annotation .ObjectMeta `readiness.status.sidecar.istio.io/failureThreshold` .Values.global.proxy.readinessFailureThreshold }}
-            {{ end -}}
+            {{ end }}
             securityContext:
-              {{- if eq (index .ProxyConfig.ProxyMetadata "IPTABLES_TRACE_LOGGING") "true" }}
+              {{ if eq (index .ProxyConfig.ProxyMetadata "IPTABLES_TRACE_LOGGING") "true" }}
               allowPrivilegeEscalation: true
               capabilities:
                 add:
@@ -1253,36 +1253,36 @@ data:
               runAsGroup: {{ .ProxyGID | default "1337" }}
               runAsNonRoot: false
               runAsUser: 0
-              {{- else }}
+              {{ else }}
               allowPrivilegeEscalation: {{ .Values.global.proxy.privileged }}
               capabilities:
-                {{ if or $tproxy $capNetBindService -}}
+                {{ if or $tproxy $capNetBindService }}
                 add:
-                {{ if $tproxy -}}
+                {{ if $tproxy }}
                 - NET_ADMIN
-                {{- end }}
-                {{ if $capNetBindService -}}
+                {{ end }}
+                {{ if $capNetBindService }}
                 - NET_BIND_SERVICE
-                {{- end }}
-                {{- end }}
+                {{ end }}
+                {{ end }}
                 drop:
                 - ALL
               privileged: {{ .Values.global.proxy.privileged }}
               readOnlyRootFilesystem: true
-              {{ if or $tproxy $capNetBindService -}}
+              {{ if or $tproxy $capNetBindService }}
               runAsNonRoot: false
               runAsUser: 0
               runAsGroup: 1337
-              {{- else -}}
+              {{ else }}
               runAsNonRoot: true
               runAsUser: {{ .ProxyUID | default "1337" }}
               runAsGroup: {{ .ProxyGID | default "1337" }}
-              {{- end }}
-              {{- end }}
-            {{- if .Values.global.proxy.seccompProfile }}
+              {{ end }}
+              {{ end }}
+            {{ if .Values.global.proxy.seccompProfile }}
               seccompProfile:
-            {{- toYaml .Values.global.proxy.seccompProfile | nindent 8 }}
-            {{- end }}
+            {{ toYaml .Values.global.proxy.seccompProfile | nindent 8 }}
+            {{ end }}
             resources:
           {{ template "resources" . }}
             volumeMounts:
@@ -1290,68 +1290,68 @@ data:
               mountPath: /var/run/secrets/workload-spiffe-uds
             - name: credential-socket
               mountPath: /var/run/secrets/credential-uds
-            {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+            {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
             - name: gke-workload-certificate
               mountPath: /var/run/secrets/workload-spiffe-credentials
               readOnly: true
-            {{- else }}
+            {{ else }}
             - name: workload-certs
               mountPath: /var/run/secrets/workload-spiffe-credentials
-            {{- end }}
-            {{- if eq .Values.global.pilotCertProvider "istiod" }}
+            {{ end }}
+            {{ if eq .Values.global.pilotCertProvider "istiod" }}
             - mountPath: /var/run/secrets/istio
               name: istiod-ca-cert
             - mountPath: /var/run/secrets/istio/crl
               name: istio-ca-crl
-            {{- end }}
+            {{ end }}
             - mountPath: /var/lib/istio/data
               name: istio-data
             {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
             - mountPath: /etc/istio/custom-bootstrap
               name: custom-bootstrap-volume
-            {{- end }}
+            {{ end }}
             # SDS channel between istioagent and Envoy
             - mountPath: /etc/istio/proxy
               name: istio-envoy
             - mountPath: /var/run/secrets/tokens
               name: istio-token
-            {{- if .Values.global.mountMtlsCerts }}
+            {{ if .Values.global.mountMtlsCerts }}
             # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
             - mountPath: /etc/certs/
               name: istio-certs
               readOnly: true
-            {{- end }}
+            {{ end }}
             - name: istio-podinfo
               mountPath: /etc/istio/pod
-             {{- if and (eq .Values.global.proxy.tracer "lightstep") .ProxyConfig.GetTracing.GetTlsSettings }}
+             {{ if and (eq .Values.global.proxy.tracer "lightstep") .ProxyConfig.GetTracing.GetTlsSettings }}
             - mountPath: {{ directory .ProxyConfig.GetTracing.GetTlsSettings.GetCaCertificates }}
               name: lightstep-certs
               readOnly: true
-            {{- end }}
-              {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount` }}
+            {{ end }}
+              {{ if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount` }}
               {{ range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount`) }}
             - name: "{{  $index }}"
               {{ toYaml $value | indent 6 }}
               {{ end }}
-              {{- end }}
+              {{ end }}
           volumes:
           - emptyDir:
             name: workload-socket
           - emptyDir:
             name: credential-socket
-          {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+          {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
           - name: gke-workload-certificate
             csi:
               driver: workloadcertificates.security.cloud.google.com
-          {{- else }}
+          {{ else }}
           - emptyDir:
             name: workload-certs
-          {{- end }}
-          {{- if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
+          {{ end }}
+          {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
           - name: custom-bootstrap-volume
             configMap:
               name: {{ annotation .ObjectMeta `sidecar.istio.io/bootstrapOverride` "" }}
-          {{- end }}
+          {{ end }}
           # SDS channel between istioagent and Envoy
           - emptyDir:
               medium: Memory
@@ -1374,85 +1374,85 @@ data:
                   path: istio-token
                   expirationSeconds: 43200
                   audience: {{ .Values.global.sds.token.aud }}
-          {{- if eq .Values.global.pilotCertProvider "istiod" }}
+          {{ if eq .Values.global.pilotCertProvider "istiod" }}
           - name: istiod-ca-cert
-          {{- if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+          {{ if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
             projected:
               sources:
               - clusterTrustBundle:
                   name: istio.io:istiod-ca:{{ .Values.global.trustBundleName | default "root-cert" }}
                   path: root-cert.pem
-          {{- else }}
+          {{ else }}
             configMap:
               name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
-          {{- end }}
-          {{- end }}
+          {{ end }}
+          {{ end }}
           - name: istio-ca-crl
             configMap:
               name: {{ .Values.pilot.crlConfigMapName | default "istio-ca-crl" }}
               optional: true
-          {{- if .Values.global.mountMtlsCerts }}
+          {{ if .Values.global.mountMtlsCerts }}
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
           - name: istio-certs
             secret:
               optional: true
               {{ if eq .Spec.ServiceAccountName "" }}
               secretName: istio.default
-              {{ else -}}
+              {{ else }}
               secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
-              {{  end -}}
-          {{- end }}
-            {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolume` }}
+              {{  end }}
+          {{ end }}
+            {{ if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolume` }}
             {{range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolume`) }}
           - name: "{{ $index }}"
             {{ toYaml $value | indent 4 }}
             {{ end }}
             {{ end }}
-          {{- if and (eq .Values.global.proxy.tracer "lightstep") .ProxyConfig.GetTracing.GetTlsSettings }}
+          {{ if and (eq .Values.global.proxy.tracer "lightstep") .ProxyConfig.GetTracing.GetTlsSettings }}
           - name: lightstep-certs
             secret:
               optional: true
               secretName: lightstep.cacert
-          {{- end }}
-          {{- if .Values.global.imagePullSecrets }}
+          {{ end }}
+          {{ if .Values.global.imagePullSecrets }}
           imagePullSecrets:
-            {{- range .Values.global.imagePullSecrets }}
+            {{ range .Values.global.imagePullSecrets }}
             - name: {{ . }}
-            {{- end }}
-          {{- end }}
+            {{ end }}
+          {{ end }}
       gateway: |
-        {{- $containers := list }}
-        {{- range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{- end}}
+        {{ $containers := list }}
+        {{ range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{ end}}
         metadata:
           labels:
             service.istio.io/canonical-name: {{ index .ObjectMeta.Labels `service.istio.io/canonical-name` | default (index .ObjectMeta.Labels `app.kubernetes.io/name`) | default (index .ObjectMeta.Labels `app`) | default .DeploymentMeta.Name  | quote }}
             service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels `service.istio.io/canonical-revision` | default (index .ObjectMeta.Labels `app.kubernetes.io/version`) | default (index .ObjectMeta.Labels `version`) | default "latest"  | quote }}
           annotations:
             istio.io/rev: {{ .Revision | default "default" | quote }}
-            {{- if ge (len $containers) 1 }}
-            {{- if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-logs-container`) }}
+            {{ if ge (len $containers) 1 }}
+            {{ if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-logs-container`) }}
             kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}"
-            {{- end }}
-            {{- if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-container`) }}
+            {{ end }}
+            {{ if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-container`) }}
             kubectl.kubernetes.io/default-container: "{{ index $containers 0 }}"
-            {{- end }}
-            {{- end }}
+            {{ end }}
+            {{ end }}
         spec:
           securityContext:
-          {{- if .Values.gateways.securityContext }}
-            {{- toYaml .Values.gateways.securityContext | nindent 4 }}
-          {{- else }}
+          {{ if .Values.gateways.securityContext }}
+            {{ toYaml .Values.gateways.securityContext | nindent 4 }}
+          {{ else }}
             sysctls:
             - name: net.ipv4.ip_unprivileged_port_start
               value: "0"
-          {{- end }}
+          {{ end }}
           containers:
           - name: istio-proxy
-          {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
+          {{ if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
             image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image }}"
-          {{- else }}
+          {{ else }}
             image: "{{ .ProxyImage }}"
-          {{- end }}
+          {{ end }}
             ports:
             - containerPort: 15090
               protocol: TCP
@@ -1465,16 +1465,16 @@ data:
             - --proxyLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/logLevel` .Values.global.proxy.logLevel }}
             - --proxyComponentLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/componentLogLevel` .Values.global.proxy.componentLogLevel }}
             - --log_output_level={{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level }}
-          {{- if .Values.global.sts.servicePort }}
+          {{ if .Values.global.sts.servicePort }}
             - --stsPort={{ .Values.global.sts.servicePort }}
-          {{- end }}
-          {{- if .Values.global.logAsJson }}
+          {{ end }}
+          {{ if .Values.global.logAsJson }}
             - --log_as_json
-          {{- end }}
-          {{- if .Values.global.proxy.lifecycle }}
+          {{ end }}
+          {{ if .Values.global.proxy.lifecycle }}
             lifecycle:
               {{ toYaml .Values.global.proxy.lifecycle | indent 6 }}
-          {{- end }}
+          {{ end }}
             securityContext:
               runAsUser: {{ .ProxyUID | default "1337" }}
               runAsGroup: {{ .ProxyGID | default "1337" }}
@@ -1482,11 +1482,11 @@ data:
             - name: PILOT_CERT_PROVIDER
               value: {{ .Values.global.pilotCertProvider }}
             - name: CA_ADDR
-            {{- if .Values.global.caAddress }}
+            {{ if .Values.global.caAddress }}
               value: {{ .Values.global.caAddress }}
-            {{- else }}
-              value: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}.{{ .Values.global.istioNamespace }}.svc:15012
-            {{- end }}
+            {{ else }}
+              value: istiod{{ if not (eq .Values.revision "") }}-{{ .Values.revision }}{{ end }}.{{ .Values.global.istioNamespace }}.svc:15012
+            {{ end }}
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -1518,15 +1518,15 @@ data:
             - name: ISTIO_META_POD_PORTS
               value: |-
                 [
-                {{- $first := true }}
-                {{- range $index1, $c := .Spec.Containers }}
-                  {{- range $index2, $p := $c.Ports }}
-                    {{- if (structToJSON $p) }}
+                {{ $first := true }}
+                {{ range $index1, $c := .Spec.Containers }}
+                  {{ range $index2, $p := $c.Ports }}
+                    {{ if (structToJSON $p) }}
                     {{if not $first}},{{end}}{{ structToJSON $p }}
-                    {{- $first = false }}
-                    {{- end }}
-                  {{- end}}
-                {{- end}}
+                    {{ $first = false }}
+                    {{ end }}
+                  {{ end}}
+                {{ end}}
                 ]
             - name: GOMEMLIMIT
               valueFrom:
@@ -1538,10 +1538,10 @@ data:
                 resourceFieldRef:
                   resource: limits.cpu
                   divisor: "1"
-            {{- if .CompliancePolicy }}
+            {{ if .CompliancePolicy }}
             - name: COMPLIANCE_POLICY
               value: "{{ .CompliancePolicy }}"
-            {{- end }}
+            {{ end }}
             - name: ISTIO_META_APP_CONTAINERS
               value: "{{ $containers | join "," }}"
             - name: ISTIO_META_CLUSTER_ID
@@ -1552,37 +1552,37 @@ data:
                   fieldPath: spec.nodeName
             - name: ISTIO_META_INTERCEPTION_MODE
               value: "{{ .ProxyConfig.InterceptionMode.String }}"
-            {{- if .Values.global.network }}
+            {{ if .Values.global.network }}
             - name: ISTIO_META_NETWORK
               value: "{{ .Values.global.network }}"
-            {{- end }}
-            {{- if .DeploymentMeta.Name }}
+            {{ end }}
+            {{ if .DeploymentMeta.Name }}
             - name: ISTIO_META_WORKLOAD_NAME
               value: "{{ .DeploymentMeta.Name }}"
             {{ end }}
-            {{- if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
+            {{ if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
             - name: ISTIO_META_OWNER
               value: kubernetes://apis/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace `default` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
-            {{- end}}
-            {{- if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
+            {{ end}}
+            {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
             - name: ISTIO_BOOTSTRAP_OVERRIDE
               value: "/etc/istio/custom-bootstrap/custom_bootstrap.json"
-            {{- end }}
-            {{- if .Values.global.meshID }}
+            {{ end }}
+            {{ if .Values.global.meshID }}
             - name: ISTIO_META_MESH_ID
               value: "{{ .Values.global.meshID }}"
-            {{- else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
+            {{ else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
             - name: ISTIO_META_MESH_ID
               value: "{{ (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}"
-            {{- end }}
-            {{- with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
+            {{ end }}
+            {{ with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
             - name: TRUST_DOMAIN
               value: "{{ . }}"
-            {{- end }}
-            {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+            {{ end }}
+            {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
             - name: {{ $key }}
               value: "{{ $value }}"
-            {{- end }}
+            {{ end }}
             {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
             readinessProbe:
               httpGet:
@@ -1597,35 +1597,35 @@ data:
               mountPath: /var/run/secrets/workload-spiffe-uds
             - name: credential-socket
               mountPath: /var/run/secrets/credential-uds
-            {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+            {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
             - name: gke-workload-certificate
               mountPath: /var/run/secrets/workload-spiffe-credentials
               readOnly: true
-            {{- else }}
+            {{ else }}
             - name: workload-certs
               mountPath: /var/run/secrets/workload-spiffe-credentials
-            {{- end }}
-            {{- if eq .Values.global.pilotCertProvider "istiod" }}
+            {{ end }}
+            {{ if eq .Values.global.pilotCertProvider "istiod" }}
             - mountPath: /var/run/secrets/istio
               name: istiod-ca-cert
-            {{- end }}
+            {{ end }}
             - mountPath: /var/lib/istio/data
               name: istio-data
             {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
             - mountPath: /etc/istio/custom-bootstrap
               name: custom-bootstrap-volume
-            {{- end }}
+            {{ end }}
             # SDS channel between istioagent and Envoy
             - mountPath: /etc/istio/proxy
               name: istio-envoy
             - mountPath: /var/run/secrets/tokens
               name: istio-token
-            {{- if .Values.global.mountMtlsCerts }}
+            {{ if .Values.global.mountMtlsCerts }}
             # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
             - mountPath: /etc/certs/
               name: istio-certs
               readOnly: true
-            {{- end }}
+            {{ end }}
             - name: istio-podinfo
               mountPath: /etc/istio/pod
           volumes:
@@ -1633,19 +1633,19 @@ data:
             name: workload-socket
           - emptyDir: {}
             name: credential-socket
-          {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+          {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
           - name: gke-workload-certificate
             csi:
               driver: workloadcertificates.security.cloud.google.com
-          {{- else}}
+          {{ else}}
           - emptyDir: {}
             name: workload-certs
-          {{- end }}
-          {{- if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
+          {{ end }}
+          {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
           - name: custom-bootstrap-volume
             configMap:
               name: {{ annotation .ObjectMeta `sidecar.istio.io/bootstrapOverride` "" }}
-          {{- end }}
+          {{ end }}
           # SDS channel between istioagent and Envoy
           - emptyDir:
               medium: Memory
@@ -1668,36 +1668,36 @@ data:
                   path: istio-token
                   expirationSeconds: 43200
                   audience: {{ .Values.global.sds.token.aud }}
-          {{- if eq .Values.global.pilotCertProvider "istiod" }}
+          {{ if eq .Values.global.pilotCertProvider "istiod" }}
           - name: istiod-ca-cert
-          {{- if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+          {{ if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
             projected:
               sources:
               - clusterTrustBundle:
                   name: istio.io:istiod-ca:{{ .Values.global.trustBundleName | default "root-cert" }}
                   path: root-cert.pem
-          {{- else }}
+          {{ else }}
             configMap:
               name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
-          {{- end }}
-          {{- end }}
-          {{- if .Values.global.mountMtlsCerts }}
+          {{ end }}
+          {{ end }}
+          {{ if .Values.global.mountMtlsCerts }}
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
           - name: istio-certs
             secret:
               optional: true
               {{ if eq .Spec.ServiceAccountName "" }}
               secretName: istio.default
-              {{ else -}}
+              {{ else }}
               secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
-              {{  end -}}
-          {{- end }}
-          {{- if .Values.global.imagePullSecrets }}
+              {{  end }}
+          {{ end }}
+          {{ if .Values.global.imagePullSecrets }}
           imagePullSecrets:
-            {{- range .Values.global.imagePullSecrets }}
+            {{ range .Values.global.imagePullSecrets }}
             - name: {{ . }}
-            {{- end }}
-          {{- end }}
+            {{ end }}
+          {{ end }}
       grpc-simple: |
         metadata:
           annotations:
@@ -1748,7 +1748,7 @@ data:
                     }
                   }' > /var/lib/grpc/data/bootstrap.json
           containers:
-          {{- range $index, $container := .Spec.Containers }}
+          {{ range $index, $container := .Spec.Containers }}
           - name: {{ $container.Name }}
             env:
               - name: GRPC_XDS_BOOTSTRAP
@@ -1760,39 +1760,39 @@ data:
             volumeMounts:
               - mountPath: /var/lib/grpc/data/
                 name: grpc-io-proxyless-bootstrap
-          {{- end }}
+          {{ end }}
           volumes:
             - name: grpc-io-proxyless-bootstrap
               emptyDir: {}
       grpc-agent: |
-        {{- define "resources"  }}
-          {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
-            {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
+        {{ define "resources"  }}
+          {{ if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
+            {{ if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
               requests:
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU`) }}
                 cpu: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyCPU` | quote }}
                 {{ end }}
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory`) }}
                 memory: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyMemory` | quote }}
                 {{ end }}
-            {{- end }}
-            {{- if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
+            {{ end }}
+            {{ if or (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
               limits:
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit`) }}
                 cpu: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyCPULimit` | quote }}
                 {{ end }}
-                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) -}}
+                {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit`) }}
                 memory: {{ index .ObjectMeta.Annotations `sidecar.istio.io/proxyMemoryLimit` | quote }}
                 {{ end }}
-            {{- end }}
-          {{- else }}
-            {{- if .Values.global.proxy.resources }}
+            {{ end }}
+          {{ else }}
+            {{ if .Values.global.proxy.resources }}
               {{ toYaml .Values.global.proxy.resources | indent 6 }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
-        {{- $containers := list }}
-        {{- range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{- end}}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        {{ $containers := list }}
+        {{ range $index, $container := .Spec.Containers }}{{ if not (eq $container.Name "istio-proxy") }}{{ $containers = append $containers $container.Name }}{{end}}{{ end}}
         metadata:
           labels:
             {{/* security.istio.io/tlsMode: istio must be set by user, if gRPC is using mTLS initialization code. We can't set it automatically. */}}
@@ -1800,24 +1800,24 @@ data:
             service.istio.io/canonical-revision: {{ index .ObjectMeta.Labels `service.istio.io/canonical-revision` | default (index .ObjectMeta.Labels `app.kubernetes.io/version`) | default (index .ObjectMeta.Labels `version`) | default "latest"  | quote }}
           annotations: {
             istio.io/rev: {{ .Revision | default "default" | quote }},
-            {{- if ge (len $containers) 1 }}
-            {{- if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-logs-container`) }}
+            {{ if ge (len $containers) 1 }}
+            {{ if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-logs-container`) }}
             kubectl.kubernetes.io/default-logs-container: "{{ index $containers 0 }}",
-            {{- end }}
-            {{- if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-container`) }}
+            {{ end }}
+            {{ if not (isset .ObjectMeta.Annotations `kubectl.kubernetes.io/default-container`) }}
             kubectl.kubernetes.io/default-container: "{{ index $containers 0 }}",
-            {{- end }}
-            {{- end }}
+            {{ end }}
+            {{ end }}
             sidecar.istio.io/rewriteAppHTTPProbers: "false",
           }
         spec:
           containers:
           - name: istio-proxy
-          {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
+          {{ if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
             image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image }}"
-          {{- else }}
+          {{ else }}
             image: "{{ .ProxyImage }}"
-          {{- end }}
+          {{ end }}
             ports:
             - containerPort: 15020
               protocol: TCP
@@ -1830,12 +1830,12 @@ data:
             - --proxyLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/logLevel` .Values.global.proxy.logLevel }}
             - --proxyComponentLogLevel={{ annotation .ObjectMeta `sidecar.istio.io/componentLogLevel` .Values.global.proxy.componentLogLevel }}
             - --log_output_level={{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level }}
-          {{- if .Values.global.sts.servicePort }}
+          {{ if .Values.global.sts.servicePort }}
             - --stsPort={{ .Values.global.sts.servicePort }}
-          {{- end }}
-          {{- if .Values.global.logAsJson }}
+          {{ end }}
+          {{ if .Values.global.logAsJson }}
             - --log_as_json
-          {{- end }}
+          {{ end }}
             lifecycle:
               postStart:
                 exec:
@@ -1848,18 +1848,18 @@ data:
               value: grpc
             - name: OUTPUT_CERTS
               value: /var/lib/istio/data
-            {{- if eq .InboundTrafficPolicyMode "localhost" }}
+            {{ if eq .InboundTrafficPolicyMode "localhost" }}
             - name: REWRITE_PROBE_LEGACY_LOCALHOST_DESTINATION
               value: "true"
-            {{- end }}
+            {{ end }}
             - name: PILOT_CERT_PROVIDER
               value: {{ .Values.global.pilotCertProvider }}
             - name: CA_ADDR
-            {{- if .Values.global.caAddress }}
+            {{ if .Values.global.caAddress }}
               value: {{ .Values.global.caAddress }}
-            {{- else }}
-              value: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}.{{ .Values.global.istioNamespace }}.svc:15012
-            {{- end }}
+            {{ else }}
+              value: istiod{{ if not (eq .Values.revision "") }}-{{ .Values.revision }}{{ end }}.{{ .Values.global.istioNamespace }}.svc:15012
+            {{ end }}
             - name: POD_NAME
               valueFrom:
                 fieldRef:
@@ -1886,15 +1886,15 @@ data:
             - name: ISTIO_META_POD_PORTS
               value: |-
                 [
-                {{- $first := true }}
-                {{- range $index1, $c := .Spec.Containers }}
-                  {{- range $index2, $p := $c.Ports }}
-                    {{- if (structToJSON $p) }}
+                {{ $first := true }}
+                {{ range $index1, $c := .Spec.Containers }}
+                  {{ range $index2, $p := $c.Ports }}
+                    {{ if (structToJSON $p) }}
                     {{if not $first}},{{end}}{{ structToJSON $p }}
-                    {{- $first = false }}
-                    {{- end }}
-                  {{- end}}
-                {{- end}}
+                    {{ $first = false }}
+                    {{ end }}
+                  {{ end}}
+                {{ end}}
                 ]
             - name: ISTIO_META_APP_CONTAINERS
               value: "{{ $containers | join "," }}"
@@ -1904,33 +1904,33 @@ data:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            {{- if .Values.global.network }}
+            {{ if .Values.global.network }}
             - name: ISTIO_META_NETWORK
               value: "{{ .Values.global.network }}"
-            {{- end }}
-            {{- if .DeploymentMeta.Name }}
+            {{ end }}
+            {{ if .DeploymentMeta.Name }}
             - name: ISTIO_META_WORKLOAD_NAME
               value: "{{ .DeploymentMeta.Name }}"
             {{ end }}
-            {{- if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
+            {{ if and .TypeMeta.APIVersion .DeploymentMeta.Name }}
             - name: ISTIO_META_OWNER
               value: kubernetes://apis/{{ .TypeMeta.APIVersion }}/namespaces/{{ valueOrDefault .DeploymentMeta.Namespace `default` }}/{{ toLower .TypeMeta.Kind}}s/{{ .DeploymentMeta.Name }}
-            {{- end}}
-            {{- if .Values.global.meshID }}
+            {{ end}}
+            {{ if .Values.global.meshID }}
             - name: ISTIO_META_MESH_ID
               value: "{{ .Values.global.meshID }}"
-            {{- else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
+            {{ else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
             - name: ISTIO_META_MESH_ID
               value: "{{ (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}"
-            {{- end }}
-            {{- with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
+            {{ end }}
+            {{ with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
             - name: TRUST_DOMAIN
               value: "{{ . }}"
-            {{- end }}
-            {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+            {{ end }}
+            {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
             - name: {{ $key }}
               value: "{{ $value }}"
-            {{- end }}
+            {{ end }}
             # grpc uses xds:/// to resolve – no need to resolve VIP
             - name: ISTIO_META_DNS_CAPTURE
               value: "false"
@@ -1951,18 +1951,18 @@ data:
             volumeMounts:
             - name: workload-socket
               mountPath: /var/run/secrets/workload-spiffe-uds
-            {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+            {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
             - name: gke-workload-certificate
               mountPath: /var/run/secrets/workload-spiffe-credentials
               readOnly: true
-            {{- else }}
+            {{ else }}
             - name: workload-certs
               mountPath: /var/run/secrets/workload-spiffe-credentials
-            {{- end }}
-            {{- if eq .Values.global.pilotCertProvider "istiod" }}
+            {{ end }}
+            {{ if eq .Values.global.pilotCertProvider "istiod" }}
             - mountPath: /var/run/secrets/istio
               name: istiod-ca-cert
-            {{- end }}
+            {{ end }}
             - mountPath: /var/lib/istio/data
               name: istio-data
             # UDS channel between istioagent and gRPC client for XDS/SDS
@@ -1970,22 +1970,22 @@ data:
               name: istio-xds
             - mountPath: /var/run/secrets/tokens
               name: istio-token
-            {{- if .Values.global.mountMtlsCerts }}
+            {{ if .Values.global.mountMtlsCerts }}
             # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
             - mountPath: /etc/certs/
               name: istio-certs
               readOnly: true
-            {{- end }}
+            {{ end }}
             - name: istio-podinfo
               mountPath: /etc/istio/pod
-            {{- end }}
-              {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount` }}
+            {{ end }}
+              {{ if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount` }}
               {{ range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolumeMount`) }}
             - name: "{{  $index }}"
               {{ toYaml $value | indent 6 }}
               {{ end }}
-              {{- end }}
-        {{- range $index, $container := .Spec.Containers  }}
+              {{ end }}
+        {{ range $index, $container := .Spec.Containers  }}
         {{ if not (eq $container.Name "istio-proxy") }}
           - name: {{ $container.Name }}
             env:
@@ -1999,32 +1999,32 @@ data:
               # UDS channel between istioagent and gRPC client for XDS/SDS
               - mountPath: /etc/istio/proxy
                 name: istio-xds
-              {{- if eq $.Values.global.caName "GkeWorkloadCertificate" }}
+              {{ if eq $.Values.global.caName "GkeWorkloadCertificate" }}
               - name: gke-workload-certificate
                 mountPath: /var/run/secrets/workload-spiffe-credentials
                 readOnly: true
-              {{- else }}
+              {{ else }}
               - name: workload-certs
                 mountPath: /var/run/secrets/workload-spiffe-credentials
-              {{- end }}
-        {{- end }}
-        {{- end }}
+              {{ end }}
+        {{ end }}
+        {{ end }}
           volumes:
           - emptyDir:
             name: workload-socket
-          {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+          {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
           - name: gke-workload-certificate
             csi:
               driver: workloadcertificates.security.cloud.google.com
-          {{- else }}
+          {{ else }}
           - emptyDir:
             name: workload-certs
-          {{- end }}
-          {{- if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
+          {{ end }}
+          {{ if (isset .ObjectMeta.Annotations `sidecar.istio.io/bootstrapOverride`) }}
           - name: custom-bootstrap-volume
             configMap:
               name: {{ annotation .ObjectMeta `sidecar.istio.io/bootstrapOverride` "" }}
-          {{- end }}
+          {{ end }}
           # SDS channel between istioagent and Envoy
           - emptyDir:
               medium: Memory
@@ -2047,42 +2047,42 @@ data:
                   path: istio-token
                   expirationSeconds: 43200
                   audience: {{ .Values.global.sds.token.aud }}
-          {{- if eq .Values.global.pilotCertProvider "istiod" }}
+          {{ if eq .Values.global.pilotCertProvider "istiod" }}
           - name: istiod-ca-cert
-          {{- if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+          {{ if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
             projected:
               sources:
               - clusterTrustBundle:
                   name: istio.io:istiod-ca:{{ .Values.global.trustBundleName | default "root-cert" }}
                   path: root-cert.pem
-          {{- else }}
+          {{ else }}
             configMap:
               name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
-          {{- end }}
-          {{- end }}
-          {{- if .Values.global.mountMtlsCerts }}
+          {{ end }}
+          {{ end }}
+          {{ if .Values.global.mountMtlsCerts }}
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
           - name: istio-certs
             secret:
               optional: true
               {{ if eq .Spec.ServiceAccountName "" }}
               secretName: istio.default
-              {{ else -}}
+              {{ else }}
               secretName: {{  printf "istio.%s" .Spec.ServiceAccountName }}
-              {{  end -}}
-          {{- end }}
-            {{- if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolume` }}
+              {{  end }}
+          {{ end }}
+            {{ if isset .ObjectMeta.Annotations `sidecar.istio.io/userVolume` }}
             {{range $index, $value := fromJSON (index .ObjectMeta.Annotations `sidecar.istio.io/userVolume`) }}
           - name: "{{ $index }}"
             {{ toYaml $value | indent 4 }}
             {{ end }}
             {{ end }}
-          {{- if .Values.global.imagePullSecrets }}
+          {{ if .Values.global.imagePullSecrets }}
           imagePullSecrets:
-            {{- range .Values.global.imagePullSecrets }}
+            {{ range .Values.global.imagePullSecrets }}
             - name: {{ . }}
-            {{- end }}
-          {{- end }}
+            {{ end }}
+          {{ end }}
       waypoint: |
         apiVersion: v1
         kind: ServiceAccount
@@ -2090,22 +2090,22 @@ data:
           name: {{.ServiceAccount | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
                 "gateway.networking.k8s.io/gateway-class-name" .GatewayClass
               ) | nindent 4 }}
-          {{- if ge .KubeVersion 128 }}
+          {{ if ge .KubeVersion 128 }}
           # Safe since 1.28: https://github.com/kubernetes/kubernetes/pull/117412
           ownerReferences:
           - apiVersion: gateway.networking.k8s.io/v1
             kind: Gateway
             name: "{{.Name}}"
             uid: "{{.UID}}"
-          {{- end }}
+          {{ end }}
         ---
         apiVersion: apps/v1
         kind: Deployment
@@ -2113,9 +2113,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -2134,7 +2134,7 @@ data:
           template:
             metadata:
               annotations:
-                {{- toJsonMap
+                {{ toJsonMap
                   (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version")
                   (strdict "istio.io/rev" (.Revision | default "default"))
                   (strdict
@@ -2143,7 +2143,7 @@ data:
                     "prometheus.io/scrape" "true"
                   ) | nindent 8 }}
               labels:
-                {{- toJsonMap
+                {{ toJsonMap
                   (strdict
                     "sidecar.istio.io/inject" "false"
                     "istio.io/dataplane-mode" "none"
@@ -2157,22 +2157,22 @@ data:
                     "gateway.istio.io/managed" .ControllerLabel
                   ) | nindent 8}}
             spec:
-              {{- if .Values.global.waypoint.affinity }}
+              {{ if .Values.global.waypoint.affinity }}
               affinity:
-              {{- toYaml .Values.global.waypoint.affinity | nindent 8 }}
-              {{- end }}
-              {{- if .Values.global.waypoint.topologySpreadConstraints }}
+              {{ toYaml .Values.global.waypoint.affinity | nindent 8 }}
+              {{ end }}
+              {{ if .Values.global.waypoint.topologySpreadConstraints }}
               topologySpreadConstraints:
-              {{- toYaml .Values.global.waypoint.topologySpreadConstraints | nindent 8 }}
-              {{- end }}
-              {{- if .Values.global.waypoint.nodeSelector }}
+              {{ toYaml .Values.global.waypoint.topologySpreadConstraints | nindent 8 }}
+              {{ end }}
+              {{ if .Values.global.waypoint.nodeSelector }}
               nodeSelector:
-              {{- toYaml .Values.global.waypoint.nodeSelector | nindent 8 }}
-              {{- end }}
-              {{- if .Values.global.waypoint.tolerations }}
+              {{ toYaml .Values.global.waypoint.nodeSelector | nindent 8 }}
+              {{ end }}
+              {{ if .Values.global.waypoint.tolerations }}
               tolerations:
-              {{- toYaml .Values.global.waypoint.tolerations | nindent 8 }}
-              {{- end }}
+              {{ toYaml .Values.global.waypoint.tolerations | nindent 8 }}
+              {{ end }}
               serviceAccountName: {{.ServiceAccount | quote}}
               containers:
               - name: istio-proxy
@@ -2186,11 +2186,11 @@ data:
                 - containerPort: 15090
                   protocol: TCP
                   name: http-envoy-prom
-                {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
+                {{ if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
                 image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image }}"
-                {{- else }}
+                {{ else }}
                 image: "{{ .ProxyImage }}"
-                {{- end }}
+                {{ end }}
                 {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
                 args:
                 - proxy
@@ -2205,12 +2205,12 @@ data:
                 - {{ annotation .ObjectMeta `sidecar.istio.io/componentLogLevel` .Values.global.proxy.componentLogLevel | quote}}
                 - --log_output_level
                 - {{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level | quote}}
-                {{- if .Values.global.logAsJson }}
+                {{ if .Values.global.logAsJson }}
                 - --log_as_json
-                {{- end }}
-                {{- if .Values.global.proxy.outlierLogPath }}
+                {{ end }}
+                {{ if .Values.global.proxy.outlierLogPath }}
                 - --outlierLogPath={{ .Values.global.proxy.outlierLogPath }}
-                {{- end}}
+                {{ end}}
                 env:
                 - name: ISTIO_META_SERVICE_ACCOUNT
                   valueFrom:
@@ -2223,11 +2223,11 @@ data:
                 - name: PILOT_CERT_PROVIDER
                   value: {{ .Values.global.pilotCertProvider }}
                 - name: CA_ADDR
-                {{- if .Values.global.caAddress }}
+                {{ if .Values.global.caAddress }}
                   value: {{ .Values.global.caAddress }}
-                {{- else }}
-                  value: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}.{{ .Values.global.istioNamespace }}.svc:15012
-                {{- end }}
+                {{ else }}
+                  value: istiod{{ if not (eq .Values.revision "") }}-{{ .Values.revision }}{{ end }}.{{ .Values.global.istioNamespace }}.svc:15012
+                {{ end }}
                 - name: POD_NAME
                   valueFrom:
                     fieldRef:
@@ -2256,12 +2256,12 @@ data:
                 - name: PROXY_CONFIG
                   value: |
                          {{ protoToJSON .ProxyConfig }}
-                {{- if .ProxyConfig.ProxyMetadata }}
-                {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+                {{ if .ProxyConfig.ProxyMetadata }}
+                {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
                 - name: {{ $key }}
                   value: "{{ $value }}"
-                {{- end }}
-                {{- end }}
+                {{ end }}
+                {{ end }}
                 - name: GOMEMLIMIT
                   valueFrom:
                     resourceFieldRef:
@@ -2274,36 +2274,36 @@ data:
                       divisor: "1"
                 - name: ISTIO_META_CLUSTER_ID
                   value: "{{ valueOrDefault .Values.global.multiCluster.clusterName `Kubernetes` }}"
-                {{- $network := valueOrDefault (index .InfrastructureLabels `topology.istio.io/network`) .Values.global.network }}
-                {{- if $network }}
+                {{ $network := valueOrDefault (index .InfrastructureLabels `topology.istio.io/network`) .Values.global.network }}
+                {{ if $network }}
                 - name: ISTIO_META_NETWORK
                   value: "{{ $network }}"
-                {{- if eq .ControllerLabel "istio.io-eastwest-controller" }}
+                {{ if eq .ControllerLabel "istio.io-eastwest-controller" }}
                 - name: ISTIO_META_REQUESTED_NETWORK_VIEW
                   value: "{{ $network }}"
-                {{- end }}
-                {{- end }}
+                {{ end }}
+                {{ end }}
                 - name: ISTIO_META_INTERCEPTION_MODE
                   value: REDIRECT
                 - name: ISTIO_META_WORKLOAD_NAME
                   value: {{.DeploymentName}}
                 - name: ISTIO_META_OWNER
                   value: kubernetes://apis/apps/v1/namespaces/{{.Namespace}}/deployments/{{.DeploymentName}}
-                {{- if .Values.global.meshID }}
+                {{ if .Values.global.meshID }}
                 - name: ISTIO_META_MESH_ID
                   value: "{{ .Values.global.meshID }}"
-                {{- else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
+                {{ else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
                 - name: ISTIO_META_MESH_ID
                   value: "{{ (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}"
-                {{- end }}
-                {{- with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
+                {{ end }}
+                {{ with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
                 - name: TRUST_DOMAIN
                   value: "{{ . }}"
-                {{- end }}
-                {{- if .Values.global.waypoint.resources }}
+                {{ end }}
+                {{ if .Values.global.waypoint.resources }}
                 resources:
-                {{- toYaml .Values.global.waypoint.resources | nindent 10 }}
-                {{- end }}
+                {{ toYaml .Values.global.waypoint.resources | nindent 10 }}
+                {{ end }}
                 startupProbe:
                   failureThreshold: 30
                   httpGet:
@@ -2326,20 +2326,20 @@ data:
                   timeoutSeconds: 1
                 securityContext:
                   privileged: false
-                {{- if not (eq .Values.global.platform "openshift") }}
+                {{ if not (eq .Values.global.platform "openshift") }}
                   runAsGroup: 1337
                   runAsUser: 1337
-                {{- end }}
+                {{ end }}
                   allowPrivilegeEscalation: false
                   readOnlyRootFilesystem: true
                   runAsNonRoot: true
                   capabilities:
                     drop:
                     - ALL
-        {{- if .Values.gateways.seccompProfile }}
+        {{ if .Values.gateways.seccompProfile }}
                   seccompProfile:
-        {{- toYaml .Values.gateways.seccompProfile | nindent 12 }}
-        {{- end }}
+        {{ toYaml .Values.gateways.seccompProfile | nindent 12 }}
+        {{ end }}
                 volumeMounts:
                 - mountPath: /var/run/secrets/workload-spiffe-uds
                   name: workload-socket
@@ -2383,22 +2383,22 @@ data:
                       expirationSeconds: 43200
                       path: istio-token
               - name: istiod-ca-cert
-              {{- if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+              {{ if eq (.Values.pilot.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
                 projected:
                   sources:
                   - clusterTrustBundle:
                       name: istio.io:istiod-ca:{{ .Values.global.trustBundleName | default "root-cert" }}
                       path: root-cert.pem
-              {{- else }}
+              {{ else }}
                 configMap:
                   name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
-              {{- end }}
-              {{- if .Values.global.imagePullSecrets }}
+              {{ end }}
+              {{ if .Values.global.imagePullSecrets }}
               imagePullSecrets:
-                {{- range .Values.global.imagePullSecrets }}
+                {{ range .Values.global.imagePullSecrets }}
                 - name: {{ . }}
-                {{- end }}
-              {{- end }}
+                {{ end }}
+              {{ end }}
         ---
         apiVersion: v1
         kind: Service
@@ -2413,7 +2413,7 @@ data:
                 "gateway.istio.io/controller-version"
               ) | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -2429,17 +2429,17 @@ data:
         spec:
           ipFamilyPolicy: PreferDualStack
           ports:
-          {{- range $key, $val := .Ports }}
+          {{ range $key, $val := .Ports }}
           - name: {{ $val.Name | quote }}
             port: {{ $val.Port }}
             protocol: TCP
             appProtocol: {{ $val.AppProtocol }}
-          {{- end }}
+          {{ end }}
           selector:
             "{{.GatewayNameLabel}}": "{{.Name}}"
-          {{- if and (.Spec.Addresses) (eq .ServiceType "LoadBalancer") }}
+          {{ if and (.Spec.Addresses) (eq .ServiceType "LoadBalancer") }}
           loadBalancerIP: {{ (index .Spec.Addresses 0).Value | quote}}
-          {{- end }}
+          {{ end }}
           type: {{ .ServiceType | quote }}
         ---
         apiVersion: autoscaling/v2
@@ -2448,9 +2448,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
                   .InfrastructureLabels
                   (strdict
                   "gateway.networking.k8s.io/gateway-name" .Name
@@ -2474,9 +2474,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
                   .InfrastructureLabels
                   (strdict
                   "gateway.networking.k8s.io/gateway-name" .Name
@@ -2498,22 +2498,22 @@ data:
           name: {{.ServiceAccount | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
                 "gateway.networking.k8s.io/gateway-class-name" .GatewayClass
               ) | nindent 4 }}
-          {{- if ge .KubeVersion 128 }}
+          {{ if ge .KubeVersion 128 }}
           # Safe since 1.28: https://github.com/kubernetes/kubernetes/pull/117412
           ownerReferences:
           - apiVersion: gateway.networking.k8s.io/v1
             kind: Gateway
             name: "{{.Name}}"
             uid: "{{.UID}}"
-          {{- end }}
+          {{ end }}
         ---
         apiVersion: apps/v1
         kind: Deployment
@@ -2521,9 +2521,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -2542,7 +2542,7 @@ data:
           template:
             metadata:
               annotations:
-                {{- toJsonMap
+                {{ toJsonMap
                   (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version")
                   (strdict "istio.io/rev" (.Revision | default "default"))
                   (strdict
@@ -2551,7 +2551,7 @@ data:
                     "prometheus.io/scrape" "true"
                   ) | nindent 8 }}
               labels:
-                {{- toJsonMap
+                {{ toJsonMap
                   (strdict
                     "sidecar.istio.io/inject" "false"
                     "service.istio.io/canonical-name" .DeploymentName
@@ -2565,29 +2565,29 @@ data:
                   ) | nindent 8 }}
             spec:
               securityContext:
-              {{- if .Values.gateways.securityContext }}
-                {{- toYaml .Values.gateways.securityContext | nindent 8 }}
-              {{- else }}
+              {{ if .Values.gateways.securityContext }}
+                {{ toYaml .Values.gateways.securityContext | nindent 8 }}
+              {{ else }}
                 sysctls:
                 - name: net.ipv4.ip_unprivileged_port_start
                   value: "0"
-              {{- if .Values.gateways.seccompProfile }}
+              {{ if .Values.gateways.seccompProfile }}
                 seccompProfile:
-              {{- toYaml .Values.gateways.seccompProfile | nindent 10 }}
-              {{- end }}
-              {{- end }}
+              {{ toYaml .Values.gateways.seccompProfile | nindent 10 }}
+              {{ end }}
+              {{ end }}
               serviceAccountName: {{.ServiceAccount | quote}}
               containers:
               - name: istio-proxy
-              {{- if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
+              {{ if contains "/" (annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image) }}
                 image: "{{ annotation .ObjectMeta `sidecar.istio.io/proxyImage` .Values.global.proxy.image }}"
-              {{- else }}
+              {{ else }}
                 image: "{{ .ProxyImage }}"
-              {{- end }}
-                {{- if .Values.global.proxy.resources }}
+              {{ end }}
+                {{ if .Values.global.proxy.resources }}
                 resources:
-                  {{- toYaml .Values.global.proxy.resources | nindent 10 }}
-                {{- end }}
+                  {{ toYaml .Values.global.proxy.resources | nindent 10 }}
+                {{ end }}
                 {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
                 securityContext:
                   capabilities:
@@ -2620,25 +2620,25 @@ data:
                 - {{ annotation .ObjectMeta `sidecar.istio.io/componentLogLevel` .Values.global.proxy.componentLogLevel | quote}}
                 - --log_output_level
                 - {{ annotation .ObjectMeta `sidecar.istio.io/agentLogLevel` .Values.global.logging.level | quote}}
-              {{- if .Values.global.sts.servicePort }}
+              {{ if .Values.global.sts.servicePort }}
                 - --stsPort={{ .Values.global.sts.servicePort }}
-              {{- end }}
-              {{- if .Values.global.logAsJson }}
+              {{ end }}
+              {{ if .Values.global.logAsJson }}
                 - --log_as_json
-              {{- end }}
-              {{- if .Values.global.proxy.lifecycle }}
+              {{ end }}
+              {{ if .Values.global.proxy.lifecycle }}
                 lifecycle:
-                  {{- toYaml .Values.global.proxy.lifecycle | nindent 10 }}
-              {{- end }}
+                  {{ toYaml .Values.global.proxy.lifecycle | nindent 10 }}
+              {{ end }}
                 env:
                 - name: PILOT_CERT_PROVIDER
                   value: {{ .Values.global.pilotCertProvider }}
                 - name: CA_ADDR
-                {{- if .Values.global.caAddress }}
+                {{ if .Values.global.caAddress }}
                   value: {{ .Values.global.caAddress }}
-                {{- else }}
-                  value: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}.{{ .Values.global.istioNamespace }}.svc:15012
-                {{- end }}
+                {{ else }}
+                  value: istiod{{ if not (eq .Values.revision "") }}-{{ .Values.revision }}{{ end }}.{{ .Values.global.istioNamespace }}.svc:15012
+                {{ end }}
                 - name: POD_NAME
                   valueFrom:
                     fieldRef:
@@ -2689,33 +2689,33 @@ data:
                       fieldPath: spec.nodeName
                 - name: ISTIO_META_INTERCEPTION_MODE
                   value: "{{ .ProxyConfig.InterceptionMode.String }}"
-                {{- with (valueOrDefault  (index .InfrastructureLabels "topology.istio.io/network") .Values.global.network) }}
+                {{ with (valueOrDefault  (index .InfrastructureLabels "topology.istio.io/network") .Values.global.network) }}
                 - name: ISTIO_META_NETWORK
                   value: {{.|quote}}
-                {{- end }}
+                {{ end }}
                 - name: ISTIO_META_WORKLOAD_NAME
                   value: {{.DeploymentName|quote}}
                 - name: ISTIO_META_OWNER
                   value: "kubernetes://apis/apps/v1/namespaces/{{.Namespace}}/deployments/{{.DeploymentName}}"
-                {{- if .Values.global.meshID }}
+                {{ if .Values.global.meshID }}
                 - name: ISTIO_META_MESH_ID
                   value: "{{ .Values.global.meshID }}"
-                {{- else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
+                {{ else if (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}
                 - name: ISTIO_META_MESH_ID
                   value: "{{ (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain) }}"
-                {{- end }}
-                {{- with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
+                {{ end }}
+                {{ with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
                 - name: TRUST_DOMAIN
                   value: "{{ . }}"
-                {{- end }}
-                {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+                {{ end }}
+                {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
                 - name: {{ $key }}
                   value: "{{ $value }}"
-                {{- end }}
-                {{- with (index .InfrastructureLabels "topology.istio.io/network") }}
+                {{ end }}
+                {{ with (index .InfrastructureLabels "topology.istio.io/network") }}
                 - name: ISTIO_META_REQUESTED_NETWORK_VIEW
                   value: {{.|quote}}
-                {{- end }}
+                {{ end }}
                 startupProbe:
                   failureThreshold: 30
                   httpGet:
@@ -2741,18 +2741,18 @@ data:
                   mountPath: /var/run/secrets/workload-spiffe-uds
                 - name: credential-socket
                   mountPath: /var/run/secrets/credential-uds
-                {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+                {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
                 - name: gke-workload-certificate
                   mountPath: /var/run/secrets/workload-spiffe-credentials
                   readOnly: true
-                {{- else }}
+                {{ else }}
                 - name: workload-certs
                   mountPath: /var/run/secrets/workload-spiffe-credentials
-                {{- end }}
-                {{- if eq .Values.global.pilotCertProvider "istiod" }}
+                {{ end }}
+                {{ if eq .Values.global.pilotCertProvider "istiod" }}
                 - mountPath: /var/run/secrets/istio
                   name: istiod-ca-cert
-                {{- end }}
+                {{ end }}
                 - mountPath: /var/lib/istio/data
                   name: istio-data
                 # SDS channel between istioagent and Envoy
@@ -2767,14 +2767,14 @@ data:
                 name: workload-socket
               - emptyDir: {}
                 name: credential-socket
-              {{- if eq .Values.global.caName "GkeWorkloadCertificate" }}
+              {{ if eq .Values.global.caName "GkeWorkloadCertificate" }}
               - name: gke-workload-certificate
                 csi:
                   driver: workloadcertificates.security.cloud.google.com
-              {{- else}}
+              {{ else}}
               - emptyDir: {}
                 name: workload-certs
-              {{- end }}
+              {{ end }}
               # SDS channel between istioagent and Envoy
               - emptyDir:
                   medium: Memory
@@ -2797,25 +2797,25 @@ data:
                       path: istio-token
                       expirationSeconds: 43200
                       audience: {{ .Values.global.sds.token.aud }}
-              {{- if eq .Values.global.pilotCertProvider "istiod" }}
+              {{ if eq .Values.global.pilotCertProvider "istiod" }}
               - name: istiod-ca-cert
-              {{- if eq ((.Values.pilot).env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+              {{ if eq ((.Values.pilot).env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
                 projected:
                   sources:
                   - clusterTrustBundle:
                       name: istio.io:istiod-ca:{{ .Values.global.trustBundleName | default "root-cert" }}
                       path: root-cert.pem
-              {{- else }}
+              {{ else }}
                 configMap:
                   name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
-              {{- end }}
-              {{- end }}
-              {{- if .Values.global.imagePullSecrets }}
+              {{ end }}
+              {{ end }}
+              {{ if .Values.global.imagePullSecrets }}
               imagePullSecrets:
-                {{- range .Values.global.imagePullSecrets }}
+                {{ range .Values.global.imagePullSecrets }}
                 - name: {{ . }}
-                {{- end }}
-              {{- end }}
+                {{ end }}
+              {{ end }}
         ---
         apiVersion: v1
         kind: Service
@@ -2823,7 +2823,7 @@ data:
           annotations:
             {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -2839,17 +2839,17 @@ data:
         spec:
           ipFamilyPolicy: PreferDualStack
           ports:
-          {{- range $key, $val := .Ports }}
+          {{ range $key, $val := .Ports }}
           - name: {{ $val.Name | quote }}
             port: {{ $val.Port }}
             protocol: TCP
             appProtocol: {{ $val.AppProtocol }}
-          {{- end }}
+          {{ end }}
           selector:
             "{{.GatewayNameLabel}}": {{.Name}}
-          {{- if and (.Spec.Addresses) (eq .ServiceType "LoadBalancer") }}
+          {{ if and (.Spec.Addresses) (eq .ServiceType "LoadBalancer") }}
           loadBalancerIP: {{ (index .Spec.Addresses 0).Value | quote}}
-          {{- end }}
+          {{ end }}
           type: {{ .ServiceType | quote }}
         ---
         apiVersion: autoscaling/v2
@@ -2858,9 +2858,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
                   .InfrastructureLabels
                   (strdict
                   "gateway.networking.k8s.io/gateway-name" .Name
@@ -2884,9 +2884,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
                   .InfrastructureLabels
                   (strdict
                   "gateway.networking.k8s.io/gateway-name" .Name
@@ -2908,9 +2908,9 @@ data:
           name: {{.ServiceAccount | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -2928,9 +2928,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -2949,7 +2949,7 @@ data:
           template:
             metadata:
               annotations:
-                {{- toJsonMap
+                {{ toJsonMap
                   (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version")
                   (strdict "istio.io/rev" (.Revision | default "default"))
                   (strdict
@@ -2958,7 +2958,7 @@ data:
                     "prometheus.io/scrape" "true"
                   ) | nindent 8 }}
               labels:
-                {{- toJsonMap
+                {{ toJsonMap
                   (strdict
                     "sidecar.istio.io/inject" "false"
                     "service.istio.io/canonical-name" .DeploymentName
@@ -2972,29 +2972,29 @@ data:
                   ) | nindent 8 }}
             spec:
               securityContext:
-              {{- if .Values.gateways.securityContext }}
-                {{- toYaml .Values.gateways.securityContext | nindent 8 }}
-              {{- else }}
+              {{ if .Values.gateways.securityContext }}
+                {{ toYaml .Values.gateways.securityContext | nindent 8 }}
+              {{ else }}
                 sysctls:
                 - name: net.ipv4.ip_unprivileged_port_start # allows binding to 80 and 443 without root
                   value: "0"
-              {{- if .Values.gateways.seccompProfile }}
+              {{ if .Values.gateways.seccompProfile }}
                 seccompProfile:
-              {{- toYaml .Values.gateways.seccompProfile | nindent 10 }}
-              {{- end }}
-              {{- end }}
+              {{ toYaml .Values.gateways.seccompProfile | nindent 10 }}
+              {{ end }}
+              {{ end }}
               serviceAccountName: {{.ServiceAccount | quote}}
               containers:
               - name: agentgateway
-              {{- if contains "/" (annotation .ObjectMeta `gateway.istio.io/agentgatewayImage` .Values.global.agentgateway.image) }}
+              {{ if contains "/" (annotation .ObjectMeta `gateway.istio.io/agentgatewayImage` .Values.global.agentgateway.image) }}
                 image: "{{ annotation .ObjectMeta `gateway.istio.io/agentgatewayImage` .Values.global.agentgateway.image }}"
-              {{- else }}
+              {{ else }}
                 image: "{{ .AgentgatewayImage }}"
-              {{- end }}
-                {{- if .Values.global.proxy.resources }}
+              {{ end }}
+                {{ if .Values.global.proxy.resources }}
                 resources:
-                  {{- toYaml .Values.global.proxy.resources | nindent 10 }}
-                {{- end }}
+                  {{ toYaml .Values.global.proxy.resources | nindent 10 }}
+                {{ end }}
                 {{with .Values.global.imagePullPolicy }}imagePullPolicy: "{{.}}"{{end}}
                 securityContext:
                   capabilities:
@@ -3016,10 +3016,10 @@ data:
                 args:
                 - --config
                 - '{}'
-              {{- if .Values.global.proxy.lifecycle }}
+              {{ if .Values.global.proxy.lifecycle }}
                 lifecycle:
-                  {{- toYaml .Values.global.proxy.lifecycle | nindent 10 }}
-              {{- end }}
+                  {{ toYaml .Values.global.proxy.lifecycle | nindent 10 }}
+              {{ end }}
                 env:
                 - name: POD_NAME
                   valueFrom:
@@ -3052,18 +3052,18 @@ data:
                   value: "1"
                 - name: CLUSTER_ID
                   value: "{{ valueOrDefault .Values.global.multiCluster.clusterName .ClusterID }}"
-                {{- with (valueOrDefault  (index .InfrastructureLabels "topology.istio.io/network") .Values.global.network) }}
+                {{ with (valueOrDefault  (index .InfrastructureLabels "topology.istio.io/network") .Values.global.network) }}
                 - name: NETWORK
                   value: {{.|quote}}
-                {{- end }}
-                {{- with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
+                {{ end }}
+                {{ with (valueOrDefault .MeshConfig.TrustDomain .Values.global.trustDomain)  }}
                 - name: TRUST_DOMAIN
                   value: "{{ . }}"
-                {{- end }}
-                {{- range $key, $value := .ProxyConfig.ProxyMetadata }}
+                {{ end }}
+                {{ range $key, $value := .ProxyConfig.ProxyMetadata }}
                 - name: {{ $key }}
                   value: "{{ $value }}"
-                {{- end }}
+                {{ end }}
                 - name: XDS_ADDRESS
                   value: {{ .ProxyConfig.DiscoveryAddress | quote }}
                 startupProbe:
@@ -3103,25 +3103,25 @@ data:
                       path: xds-token
                       expirationSeconds: 43200
                       audience: {{ .Values.global.sds.token.aud }}
-              {{- if eq .Values.global.pilotCertProvider "istiod" }}
+              {{ if eq .Values.global.pilotCertProvider "istiod" }}
               - name: istiod-ca-cert
-              {{- if eq ((.Values.pilot).env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+              {{ if eq ((.Values.pilot).env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
                 projected:
                   sources:
                   - clusterTrustBundle:
                       name: istio.io:istiod-ca:{{ .Values.global.trustBundleName | default "root-cert" }}
                       path: root-cert.pem
-              {{- else }}
+              {{ else }}
                 configMap:
                   name: {{ .Values.global.trustBundleName | default "istio-ca-root-cert" }}
-              {{- end }}
-              {{- end }}
-              {{- if .Values.global.imagePullSecrets }}
+              {{ end }}
+              {{ end }}
+              {{ if .Values.global.imagePullSecrets }}
               imagePullSecrets:
-                {{- range .Values.global.imagePullSecrets }}
+                {{ range .Values.global.imagePullSecrets }}
                 - name: {{ . }}
-                {{- end }}
-              {{- end }}
+                {{ end }}
+              {{ end }}
         ---
         apiVersion: v1
         kind: Service
@@ -3129,7 +3129,7 @@ data:
           annotations:
             {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
               .InfrastructureLabels
               (strdict
                 "gateway.networking.k8s.io/gateway-name" .Name
@@ -3145,17 +3145,17 @@ data:
         spec:
           ipFamilyPolicy: PreferDualStack
           ports:
-          {{- range $key, $val := .Ports }}
+          {{ range $key, $val := .Ports }}
           - name: {{ $val.Name | quote }}
             port: {{ $val.Port }}
             protocol: TCP
             appProtocol: {{ $val.AppProtocol }}
-          {{- end }}
+          {{ end }}
           selector:
             "{{.GatewayNameLabel}}": {{.Name}}
-          {{- if and (.Spec.Addresses) (eq .ServiceType "LoadBalancer") }}
+          {{ if and (.Spec.Addresses) (eq .ServiceType "LoadBalancer") }}
           loadBalancerIP: {{ (index .Spec.Addresses 0).Value | quote}}
-          {{- end }}
+          {{ end }}
           type: {{ .ServiceType | quote }}
         ---
         apiVersion: autoscaling/v2
@@ -3164,9 +3164,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
                   .InfrastructureLabels
                   (strdict
                   "gateway.networking.k8s.io/gateway-name" .Name
@@ -3190,9 +3190,9 @@ data:
           name: {{.DeploymentName | quote}}
           namespace: {{.Namespace | quote}}
           annotations:
-            {{- toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
+            {{ toJsonMap (omit .InfrastructureAnnotations "kubectl.kubernetes.io/last-applied-configuration" "gateway.istio.io/name-override" "gateway.istio.io/service-account" "gateway.istio.io/controller-version") | nindent 4 }}
           labels:
-            {{- toJsonMap
+            {{ toJsonMap
                   .InfrastructureLabels
                   (strdict
                   "gateway.networking.k8s.io/gateway-name" .Name
