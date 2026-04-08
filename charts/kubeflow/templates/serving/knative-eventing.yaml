@@ -7765,6 +7765,7 @@ metadata:
 apiVersion: v1
 data:
   _example: |
+{/*
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -7785,6 +7786,7 @@ data:
     # - UID: reference UID
     #
     # Pod.v1: https://addressable-pod.{{ .SystemNamespace }}.svc.cluster.local/{{ .Name }}
+*/}
 kind: ConfigMap
 metadata:
   annotations:
@@ -7801,6 +7803,7 @@ metadata:
 apiVersion: v1
 data:
   _example: |
+{/*
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -7818,21 +7821,28 @@ data:
 
     # lease-duration is how long non-leaders will wait to try to acquire the
     # lock; 15 seconds is the value used by core kubernetes controllers.
+*/}
     lease-duration: "15s"
 
+{/*
     # renew-deadline is how long a leader will try to renew the lease before
     # giving up; 10 seconds is the value used by core kubernetes controllers.
+*/}
     renew-deadline: "10s"
 
+{/*
     # retry-period is how long the leader election client waits between tries of
     # actions; 2 seconds is the value used by core kubernetes controllers.
+*/}
     retry-period: "2s"
 
+{/*
     # buckets is the number of buckets used to partition key space of each
     # Reconciler. If this number is M and the replica number of the controller
     # is N, the N replicas will compete for the M buckets. The owner of a
     # bucket will take care of the reconciling for the keys partitioned into
     # that bucket.
+*/}
     buckets: "1"
 kind: ConfigMap
 metadata:
@@ -7886,6 +7896,7 @@ metadata:
 apiVersion: v1
 data:
   _example: |
+{/*
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -7903,8 +7914,10 @@ data:
 
      # metrics-protocol field specifies the protocol used when exporting metrics
     # It supports either 'none' (the default), 'prometheus', 'http/protobuf' (OTLP HTTP), 'grpc' (OTLP gRPC)
+*/}
     metrics-protocol: http/protobuf
 
+{/*
     # metrics-endpoint field specifies the destination metrics should be exported to.
     #
     # The endpoint MUST be set when the protocol is http/protobuf or grpc.
@@ -7912,35 +7925,48 @@ data:
     #
     # When the protocol is prometheus the endpoint can accept a 'host:port' string to customize the
     # listening host interface and port.
+*/}
     metrics-endpoint: http://collector.otel.svc.cluster.local/
 
+{/*
     # metrics-export-interval specifies the global metrics reporting period for control and data plane components.
     # If a zero or negative value is passed the default reporting OTel period is used (60 secs).
+*/}
     metrics-export-interval: 60s
 
+{/*
     # sink-event-error-reporting.enable whether the adapter reports a kube event to the CRD indicating
     # a failure to send a cloud event to the sink.
+*/}
     sink-event-error-reporting.enable: "false"
 
+{/*
     # runtime-profiling indicates whether it is allowed to retrieve runtime profiling data from
     # the pods via an HTTP server in the format expected by the pprof visualization tool. When
     # enabled, the Knative Eventing pods expose the profiling data on an alternate HTTP port 8008.
     # The HTTP context root for profiling is then /debug/pprof/.
+*/}
     runtime-profiling: enabled
 
+{/*
     # tracing-protocol field specifies the protocol used when exporting traces
     # It supports either 'none' (the default), 'http/protobuf' (OTLP HTTP), 'grpc' (OTLP gRPC)
     # or `stdout` for debugging purposes
+*/}
     tracing-protocol: http/protobuf
 
+{/*
     # tracing-endpoint field specifies the destination traces should be exporter to.
     #
     # The endpoint MUST be set when the protocol is http/protobuf or grpc.
     # The endpoint MUST NOT be set when the protocol is none.
+*/}
     tracing-endpoint: http://jaeger-collector.observability:4318/v1/traces
 
+{/*
     # tracing-sampling-rate allows the user to specify what percentage of all traces should be exported
     # The value should be between 0 (never sample) to 1 (always sample)
+*/}
     tracing-sampling-rate: "1"
 kind: ConfigMap
 metadata:
@@ -7959,6 +7985,7 @@ metadata:
 apiVersion: v1
 data:
   _example: |
+{/*
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -7976,6 +8003,7 @@ data:
 
     # Max number of bytes allowed to be sent for message excluding any
     # base64 decoding. Default is no limit set for data
+*/}
     data-max-size: -1
 kind: ConfigMap
 metadata:
@@ -7993,6 +8021,7 @@ metadata:
 apiVersion: v1
 data:
   _example: |
+{/*
     ################################
     #                              #
     #    EXAMPLE CONFIGURATION     #
@@ -8010,17 +8039,24 @@ data:
     # namespace-selector specifies a LabelSelector which
     # determines which namespaces the Sugar Controller should operate upon
     # Use an empty value to disable the feature (this is the default):
+*/}
     namespace-selector: ""
 
+{/*
     # Use an empty object as a string to enable for all namespaces
+*/}
     namespace-selector: "{}"
 
+{/*
     # trigger-selector specifies a LabelSelector which
     # determines which triggers the Sugar Controller should operate upon
     # Use an empty value to disable the feature (this is the default):
+*/}
     trigger-selector: ""
 
+{/*
     # Use an empty object as string to enable for all triggers
+*/}
     trigger-selector: "{}"
 kind: ConfigMap
 metadata:
@@ -8037,11 +8073,13 @@ metadata:
 apiVersion: v1
 data:
   _example: |
+{/*
     ###########################################################
     #                                                         #
     #  This config is deprecated - use config-observability   #
     #                                                         #
     ###########################################################
+*/}
 kind: ConfigMap
 metadata:
   annotations:

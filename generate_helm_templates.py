@@ -4,12 +4,10 @@ Generate Helm templates from Kubeflow kustomize manifests.
 This script processes each kustomize component and generates Helm templates.
 """
 
-import os
-import re
-import yaml
 import subprocess
 from pathlib import Path
-from collections import OrderedDict
+import yaml
+
 
 # Component definitions: (kustomize_path, helm_key, output_file, enabled_by_default)
 COMPONENTS = [
@@ -48,7 +46,7 @@ COMPONENTS = [
     ("applications/tensorboard/tensorboards-web-app/upstream/overlays/istio", "tensorboardsWebApp", "notebooks/tensorboards-web-app.yaml", True),
 
     # Training
-    ("applications/trainer/overlays", "trainer", "training/trainer.yaml", True),
+    #("applications/trainer/overlays", "trainer", "training/trainer.yaml", True),
 
     # Pipelines
     ("applications/pipeline/overlays", "pipelines", "pipelines/pipelines.yaml", True),
@@ -151,6 +149,7 @@ User namespace
 def run_kustomize_build(path):
     """Run kustomize build and return the output."""
     try:
+        print(f"    Running: kustomize build {path}")
         result = subprocess.run(
             ["kustomize", "build", path],
             capture_output=True,
@@ -169,7 +168,7 @@ def main():
     print()
 
     base_dir = Path("/root/manifests")
-    output_base = base_dir / "charts" / "kubeflow"
+    output_base = base_dir / "helm" / "charts" / "kubeflow"
 
     # Write _helpers.tpl
     helpers_path = output_base / "templates" / "_helpers.tpl"
@@ -184,7 +183,7 @@ def main():
 
     for kustomize_path, helm_key, output_file, enabled in COMPONENTS:
         processed += 1
-        full_path = base_dir / kustomize_path
+        full_path = base_dir / "kustomize" / kustomize_path
 
         print(f"[{processed}/{total_components}] Processing: {helm_key}")
         print(f"    Source: {kustomize_path}")
