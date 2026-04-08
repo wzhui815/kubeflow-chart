@@ -93,9 +93,9 @@ data:
       username: user
       userID: "15841185641784"
     staticClients:
-{/*
+{{/*
     # https://github.com/dexidp/dex/pull/1664
-*/}
+*/}}
     - idEnv: OIDC_CLIENT_ID
       redirectURIs: ["/oauth2/callback"]
       name: 'Dex Login Application'

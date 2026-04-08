@@ -857,9 +857,9 @@ metadata:
 apiVersion: v1
 data:
   config: |-
-{/*
+{{/*
     # defaultTemplates defines the default template to use for pods that do not explicitly specify a template
-*/}
+*/}}
     defaultTemplates: [sidecar]
     policy: enabled
     alwaysInjectSelector:
@@ -1312,17 +1312,17 @@ data:
             - mountPath: /etc/istio/custom-bootstrap
               name: custom-bootstrap-volume
             {{- end }}
-{/*
+{{/*
             # SDS channel between istioagent and Envoy
-*/}
+*/}}
             - mountPath: /etc/istio/proxy
               name: istio-envoy
             - mountPath: /var/run/secrets/tokens
               name: istio-token
             {{- if .Values.global.mountMtlsCerts }}
-{/*
+{{/*
             # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-*/}
+*/}}
             - mountPath: /etc/certs/
               name: istio-certs
               readOnly: true
@@ -1358,9 +1358,9 @@ data:
             configMap:
               name: {{ annotation .ObjectMeta `sidecar.istio.io/bootstrapOverride` "" }}
           {{- end }}
-{/*
+{{/*
           # SDS channel between istioagent and Envoy
-*/}
+*/}}
           - emptyDir:
               medium: Memory
             name: istio-envoy
@@ -1400,9 +1400,9 @@ data:
               name: {{ .Values.pilot.crlConfigMapName | default "istio-ca-crl" }}
               optional: true
           {{- if .Values.global.mountMtlsCerts }}
-{/*
+{{/*
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-*/}
+*/}}
           - name: istio-certs
             secret:
               optional: true
@@ -1625,17 +1625,17 @@ data:
             - mountPath: /etc/istio/custom-bootstrap
               name: custom-bootstrap-volume
             {{- end }}
-{/*
+{{/*
             # SDS channel between istioagent and Envoy
-*/}
+*/}}
             - mountPath: /etc/istio/proxy
               name: istio-envoy
             - mountPath: /var/run/secrets/tokens
               name: istio-token
             {{- if .Values.global.mountMtlsCerts }}
-{/*
+{{/*
             # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-*/}
+*/}}
             - mountPath: /etc/certs/
               name: istio-certs
               readOnly: true
@@ -1660,9 +1660,9 @@ data:
             configMap:
               name: {{ annotation .ObjectMeta `sidecar.istio.io/bootstrapOverride` "" }}
           {{- end }}
-{/*
+{{/*
           # SDS channel between istioagent and Envoy
-*/}
+*/}}
           - emptyDir:
               medium: Memory
             name: istio-envoy
@@ -1698,9 +1698,9 @@ data:
           {{- end }}
           {{- end }}
           {{- if .Values.global.mountMtlsCerts }}
-{/*
+{{/*
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-*/}
+*/}}
           - name: istio-certs
             secret:
               optional: true
@@ -1949,9 +1949,9 @@ data:
             - name: {{ $key }}
               value: "{{ $value }}"
             {{- end }}
-{/*
+{{/*
             # grpc uses xds:/// to resolve – no need to resolve VIP
-*/}
+*/}}
             - name: ISTIO_META_DNS_CAPTURE
               value: "false"
             - name: DISABLE_ENVOY
@@ -1985,17 +1985,17 @@ data:
             {{- end }}
             - mountPath: /var/lib/istio/data
               name: istio-data
-{/*
+{{/*
             # UDS channel between istioagent and gRPC client for XDS/SDS
-*/}
+*/}}
             - mountPath: /etc/istio/proxy
               name: istio-xds
             - mountPath: /var/run/secrets/tokens
               name: istio-token
             {{- if .Values.global.mountMtlsCerts }}
-{/*
+{{/*
             # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-*/}
+*/}}
             - mountPath: /etc/certs/
               name: istio-certs
               readOnly: true
@@ -2020,9 +2020,9 @@ data:
             volumeMounts:
               - mountPath: /var/lib/istio/data
                 name: istio-data
-{/*
+{{/*
               # UDS channel between istioagent and gRPC client for XDS/SDS
-*/}
+*/}}
               - mountPath: /etc/istio/proxy
                 name: istio-xds
               {{- if eq $.Values.global.caName "GkeWorkloadCertificate" }}
@@ -2051,9 +2051,9 @@ data:
             configMap:
               name: {{ annotation .ObjectMeta `sidecar.istio.io/bootstrapOverride` "" }}
           {{- end }}
-{/*
+{{/*
           # SDS channel between istioagent and Envoy
-*/}
+*/}}
           - emptyDir:
               medium: Memory
             name: istio-xds
@@ -2089,9 +2089,9 @@ data:
           {{- end }}
           {{- end }}
           {{- if .Values.global.mountMtlsCerts }}
-{/*
+{{/*
           # Use the key and cert mounted to /etc/certs/ for the in-cluster mTLS communications.
-*/}
+*/}}
           - name: istio-certs
             secret:
               optional: true
@@ -2129,9 +2129,9 @@ data:
                 "gateway.networking.k8s.io/gateway-class-name" .GatewayClass
               ) | nindent 4 }}
           {{- if ge .KubeVersion 128 }}
-{/*
+{{/*
           # Safe since 1.28: https://github.com/kubernetes/kubernetes/pull/117412
-*/}
+*/}}
           ownerReferences:
           - apiVersion: gateway.networking.k8s.io/v1
             kind: Gateway
@@ -2539,9 +2539,9 @@ data:
                 "gateway.networking.k8s.io/gateway-class-name" .GatewayClass
               ) | nindent 4 }}
           {{- if ge .KubeVersion 128 }}
-{/*
+{{/*
           # Safe since 1.28: https://github.com/kubernetes/kubernetes/pull/117412
-*/}
+*/}}
           ownerReferences:
           - apiVersion: gateway.networking.k8s.io/v1
             kind: Gateway
@@ -2789,9 +2789,9 @@ data:
                 {{- end }}
                 - mountPath: /var/lib/istio/data
                   name: istio-data
-{/*
+{{/*
                 # SDS channel between istioagent and Envoy
-*/}
+*/}}
                 - mountPath: /etc/istio/proxy
                   name: istio-envoy
                 - mountPath: /var/run/secrets/tokens
@@ -2811,9 +2811,9 @@ data:
               - emptyDir: {}
                 name: workload-certs
               {{- end }}
-{/*
+{{/*
               # SDS channel between istioagent and Envoy
-*/}
+*/}}
               - emptyDir:
                   medium: Memory
                 name: istio-envoy

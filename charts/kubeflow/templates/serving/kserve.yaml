@@ -72972,10 +72972,10 @@ data:
     \    \"metricScalerEndpoint\": \"keda-otel-scaler.keda.svc:4318\",\n     # metricReceiverEndpoint
     is the endpoint from which the OpenTelemetry Collector will scrape the metrics.\n
     \     \"metricReceiverEndpoint\": \"keda-otel-scaler.keda.svc:4317\"\n   }\n\n
-{/*
+{{/*
     # ====================================== AUTOSCALER CONFIGURATION ======================================\n
     # Example\n autoscaler: |-\n   {\n     # scaleUpStabilizationWindowSeconds is
-*/}
+*/}}
     the stabilization window in seconds for scale up.\n     \"scaleUpStabilizationWindowSeconds\":
     \"0\",\n     # scaleDownStabilizationWindowSeconds is the stabilization window
     in seconds for scale down.\n     \"scaleDownStabilizationWindowSeconds\": \"300\"\n
@@ -73010,10 +73010,10 @@ data:
     is the UID under with which the modelcar process and the main container is running.\n
     \      # Some Kubernetes clusters might require this to be root (0). If not set
     the user id is left untouched (default)\n       \"uidModelcar\": 10\n   }\n \n
-{/*
+{{/*
     # ====================================== CREDENTIALS ======================================\n
     # Example\n credentials: |-\n   {\n      \"storageSpecSecretName\": \"storage-config\",\n
-*/}
+*/}}
     \     \"storageSecretNameAnnotation\": \"serving.kserve.io/storageSecretName\",\n
     \     \"gcs\": {\n          \"gcsCredentialFileName\": \"gcloud-application-credentials.json\"\n
     \     },\n      \"s3\": {\n          \"s3AccessKeyIDName\": \"AWS_ACCESS_KEY_ID\",\n
@@ -73024,11 +73024,11 @@ data:
     \"\"\n      }\n   }\n # This is a global configuration used for downloading models
     from the cloud storage.\n # You can override this configuration by specifying
     the annotations on service account or static secret.\n # https://kserve.github.io/website/master/modelserving/storage/s3/s3/\n
-{/*
+{{/*
     # For a quick reference about AWS ENV variables:\n # AWS Cli: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html\n
     # Boto: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables\n
     #\n # The `s3AccessKeyIDName` and `s3SecretAccessKeyName` fields are only used
-*/}
+*/}}
     from this configmap when static credentials (IAM User Access Key Secret)\n # are
     used as the authentication method for AWS S3.\n # The rest of the fields are used
     in both authentication methods (IAM Role for Service Account & IAM User Access
@@ -73155,9 +73155,9 @@ data:
     \"1\",\n       \n       # defaultUrl specifies the default logger url. If logger
     is not specified in the resource this url is used.\n       \"defaultUrl\": \"http://default-broker\"\n
     \  }\n \n # ====================================== BATCHER CONFIGURATION ======================================\n
-{/*
+{{/*
     # Example\n batcher: |-\n   {\n       \"image\" : \"kserve/agent:v0.16.0\",\n
-*/}
+*/}}
     \      \"memoryRequest\": \"1Gi\",\n       \"memoryLimit\": \"1Gi\",\n       \"cpuRequest\":
     \"1\",\n       \"cpuLimit\": \"1\",\n       \"maxBatchSize\": \"32\",\n       \"maxLatency\":
     \"5000\"\n   }\n batcher: |-\n   {\n       # image contains the default batcher

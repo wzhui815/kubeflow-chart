@@ -411,7 +411,7 @@ subjects:
 apiVersion: v1
 data:
   namespace-labels.yaml: |
-{/*
+{{/*
     # This file is a duplicate of apps/profiles/upstream/base/namespace-labels.yaml
     # as using only the required label to merge it with the existing config map of profiles
     # deployment to enable PSS for profile namespaces, leads to creation of a new config map
@@ -430,7 +430,7 @@ data:
     # 1. Remove the label by using `key: ''` and deploy.
     # 2. Add the label by using `key: 'value'` and deploy.
     #
-*/}
+*/}}
     katib.kubeflow.org/metrics-collector-injection: "enabled"
     serving.kubeflow.org/inferenceservice: "enabled"
     pipelines.kubeflow.org/enabled: "true"

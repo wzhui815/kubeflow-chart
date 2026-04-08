@@ -34,7 +34,7 @@ def wrap_yaml_comments_to_helm(yaml_content: str) -> str:
             # 如果有正在收集的注释，先输出
             if comment_block:
                 comment_content = "".join(comment_block).rstrip("\n")
-                helm_comment = f"{{/*\n{comment_content}\n*/}}"
+                helm_comment = f"{{{{/*\n{comment_content}\n*/}}}}"
                 result.append(helm_comment + "\n")
                 comment_block = []
 
@@ -44,7 +44,7 @@ def wrap_yaml_comments_to_helm(yaml_content: str) -> str:
     # 处理文件末尾残留的注释块
     if comment_block:
         comment_content = "".join(comment_block).rstrip("\n")
-        helm_comment = f"{{/*\n{comment_content}\n*/}}"
+        helm_comment = f"{{{{/*\n{comment_content}\n*/}}}}"
         result.append(helm_comment + "\n")
 
     return "".join(result)
